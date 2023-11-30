@@ -103,4 +103,3 @@ classImplements(SAML2PluginBase,
                 IExtractionPlugin,
                 IPropertiesPlugin,
                 )
-

@@ -17,8 +17,7 @@ use-flake8 = true
 
 [manifest]
 additional-rules = [
-    "recursive-include src *.dtml",
-    "recursive-include src *.zcml",
+    "recursive-include src *.zpt",
     ]
 
 [check-manifest]
@@ -30,12 +29,12 @@ additional-ignores = [
 fail-under = 40
 
 [isort]
-known_third_party = "ldap, ldapurl, six"
-known_first_party = "dataflake, Products.GenericSetup, Products.LDAPUserFolder, Products.PluggableAuthService"
+known_third_party = ""
+known_first_party = "dataflake, Products.PluggableAuthService"
 
 [github-actions]
 additional-install = [
     "set -ex",
     "sudo apt update",
-    "sudo apt install -y ldap-utils slapd libldap2-dev libsasl2-dev",
+    "sudo apt install -y xmlsec1 xmlsec1-dev",
     ]

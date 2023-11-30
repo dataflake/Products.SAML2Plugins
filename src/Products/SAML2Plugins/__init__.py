@@ -22,6 +22,7 @@ from .SAML2Plugin import SAML2Plugin
 from .SAML2Plugin import manage_addSAML2Plugin
 from .SAML2Plugin import manage_addSAML2PluginForm
 
+
 registerMultiPlugin(SAML2Plugin.meta_type)
 
 

@@ -13,8 +13,6 @@
 """ SAML 2.0 plugin class for the PluggableAuthService
 """
 
-import os
-
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
 from .PluginBase import SAML2PluginBase

@@ -22,7 +22,7 @@ class PluginTestBase(unittest.TestCase):
         return self._getTargetClass()('testplugin')
 
     def _getTargetClass(self):
-        raise NotImplemented('Must be implemented in derived classes')
+        raise NotImplementedError('Must be implemented in derived classes')
 
 
 class InterfaceTestMixin:
