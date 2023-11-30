@@ -20,7 +20,6 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from .PluginBase import SAML2PluginBase
 
 
-_forms_folder = os.path.join(package_home(globals()), 'www')
 manage_addSAML2PluginForm = PageTemplateFile(
     'www/SAML2Plugin_add', globals(),
     __name__='manage_addSAML2PluginForm')

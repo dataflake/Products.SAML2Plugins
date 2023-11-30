@@ -20,5 +20,5 @@ from .base import PluginTestBase
 class SAML2PluginBaseTests(PluginTestBase, InterfaceTestMixin):
 
     def _getTargetClass(self):
-        from .PluginBase import SAML2PluginBase
+        from ..PluginBase import SAML2PluginBase
         return SAML2PluginBase

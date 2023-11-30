@@ -37,10 +37,67 @@ class SAML2PluginBase(BasePlugin):
         self.id = id
         self.title = title
 
+    #
+    #   IAuthenticationPlugin implementation
+    #
+    @security.private
+    def authenticateCredentials(self, credentials):
+        """ See IAuthenticationPlugin.
+
+        o We expect the credentials to be those returned by
+          ILoginPasswordExtractionPlugin.
+        """
+        pass
+
+    #
+    # IChallengePlugin implementation
+    #
+    @security.private
+    def challenge(self, request, response, **kw):
+        """ See IChallengePlugin.
+
+        Challenge the user for credentials.
+        """
+        pass
+
+    #
+    # ICredentialsResetPlugin implementation
+    #
+    @security.private
+    def resetCredentials(self, request, response):
+        """ See ICredentialsResetPlugin.
+
+        Clear out user credentials locally.
+        """
+        pass
+
+    #
+    # IExtractionPlugin implementation
+    #
+    @security.private
+    def extractCredentials(self, request):
+        """ See IExtractionPlugin.
+
+        Extract credentials from 'request'.
+        """
+        pass
+
+    #
+    # IPropertiesPlugin implementation
+    #
+    @security.private
+    def getPropertiesForUser(self, user, request=None):
+        """ See IPropertiesPlugin.
+
+        Get properties for the user.
+        """
+        pass
+
 
 InitializeClass(SAML2PluginBase)
 
-classImplements(IAuthenticationPlugin,
+classImplements(SAML2PluginBase,
+                IAuthenticationPlugin,
                 IChallengePlugin,
                 ICredentialsResetPlugin,
                 IExtractionPlugin,
