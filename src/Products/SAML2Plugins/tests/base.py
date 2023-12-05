@@ -18,8 +18,14 @@ import unittest
 
 class PluginTestBase(unittest.TestCase):
 
-    def _makeOne(self):
-        return self._getTargetClass()('testplugin')
+    def _makeOne(self, *args, **kw):
+        if not args:
+            args = ('testplugin',)
+        configuration_folder = kw.pop('configuration_folder', None)
+        plugin = self._getTargetClass()(*args, **kw)
+        if configuration_folder is not None:
+            plugin._configuration_folder = configuration_folder
+        return plugin
 
     def _getTargetClass(self):
         raise NotImplementedError('Must be implemented in derived classes')

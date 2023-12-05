@@ -27,10 +27,10 @@ additional-ignores = [
     ]
 
 [coverage]
-fail-under = 40
+fail-under = 95
 
 [isort]
-known_third_party = ""
+known_third_party = "saml2"
 known_first_party = "dataflake, Products.PluggableAuthService"
 
 [github-actions]

@@ -32,6 +32,6 @@ def initialize(context):
 
     context.registerClass(SAML2Plugin,
                           permission=add_user_folders,
-                          constructors=(manage_addSAML2Plugin,
-                                        manage_addSAML2PluginForm),
+                          constructors=(manage_addSAML2PluginForm,
+                                        manage_addSAML2Plugin),
                           visibility=None)

@@ -13,8 +13,11 @@
 """ SAML2Plugin unit tests
 """
 
+from Testing.ZopeTestCase import ZopeTestCase
+
 from .base import InterfaceTestMixin
 from .base import PluginTestBase
+from .dummy import DummyRequest
 
 
 class SAML2PluginBaseTests(PluginTestBase, InterfaceTestMixin):
@@ -22,3 +25,22 @@ class SAML2PluginBaseTests(PluginTestBase, InterfaceTestMixin):
     def _getTargetClass(self):
         from ..SAML2Plugin import SAML2Plugin
         return SAML2Plugin
+
+
+class SAML2PluginFunctionalTests(ZopeTestCase):
+
+    def test_factory(self):
+        from ..SAML2Plugin import manage_addSAML2Plugin
+
+        manage_addSAML2Plugin(self.app, 'samlplugin', 'Plugin Title')
+        plugin = self.app.samlplugin
+
+        self.assertEqual(plugin.getId(), 'samlplugin')
+        self.assertEqual(plugin.title, 'Plugin Title')
+
+        # Try with a request
+        req = DummyRequest()
+        manage_addSAML2Plugin(self.app, 'samlplugin2', 'Plugin Title',
+                              REQUEST=req)
+
+        self.assertEqual(req.RESPONSE.redirected, 'http://nohost/manage_main')
