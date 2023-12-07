@@ -20,12 +20,44 @@
     <i>${context/getConfigurationFilePath}</i>.</b>
   </p>
 
-  <b tal:condition="context/haveConfigurationFile"
-     tal:on-error="string:Invalid configuration file at ${context/getConfigurationFilePath}, please check.">
-    <pre tal:content="context/getConfigurationZMIRepresentation">
-      CONFIG
-    </pre>
-  </b>
+  <div tal:define="errors context/getConfigurationErrors"
+       tal:condition="errors|nothing">
+    <h4>Configuration issues</h4>
+
+    <p class="form-help">
+      The configuration is not fully valid. Items marked with severity
+      <i>error</i> will prevent the configuration from loading, which
+      will make automatic metadata generation fail - see tab
+      <i>Metadata</i>.
+    </p>
+
+    <table class="table">
+      <thead class="thead-light">
+        <tr class="table-sm">
+          <th scope="col">Configuration key</th>
+          <th scope="col">Severity</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+
+      <tr tal:repeat="err errors">
+        <td tal:content="err/key">KEY</td>
+        <td tal:content="err/severity">SEVERITY</td>
+        <td tal:content="err/description">DESCRIPTION</td>
+      </tr>
+
+    </table>
+    <hr/>
+  </div>
+
+  <div tal:condition="context/haveConfigurationFile">
+    <h4>Configuration</h4>
+    <b tal:on-error="string:Invalid configuration file at ${context/getConfigurationFilePath}, please check.">
+      <pre tal:content="context/getConfigurationZMIRepresentation">
+        CONFIG
+      </pre>
+    </b>
+  </div>
 
 </main>
 

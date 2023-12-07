@@ -1,0 +1,12 @@
+<configure
+  xmlns="http://namespaces.zope.org/zope"
+  xmlns:browser="http://namespaces.zope.org/browser">
+
+  <browser:page
+    for="Products.SAML2Plugins.interfaces.ISAML2Plugin"
+    name="metadata"
+    class=".metadata.SAML2MetadataView"
+    permission="zope.Public"
+    />
+
+</configure>

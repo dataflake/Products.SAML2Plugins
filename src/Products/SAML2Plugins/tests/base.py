@@ -13,14 +13,17 @@
 """ Base classes for SAML2 plugin test classes
 """
 
+import os
 import unittest
+
+
+here = os.path.dirname(os.path.abspath(__file__))
+TEST_CONFIG_FOLDER = os.path.join(here, 'test_configurations')
 
 
 class PluginTestBase(unittest.TestCase):
 
     def _makeOne(self, *args, **kw):
-        if not args:
-            args = ('testplugin',)
         configuration_folder = kw.pop('configuration_folder', None)
         plugin = self._getTargetClass()(*args, **kw)
         if configuration_folder is not None:

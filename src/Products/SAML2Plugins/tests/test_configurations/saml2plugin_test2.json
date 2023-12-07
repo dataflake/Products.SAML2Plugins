@@ -1,18 +1,28 @@
 {
-    "entityid": "http://example.com/sp/metadata.xml",
+    "entityid": "http://sp.example.com/metadata.xml",
     "service": {
         "sp": {
             "name": "Example SP",
             "endpoints": {
                 "assertion_consumer_service": [
-                    "http://example.com/sp"
+					"http://sp.example.com/"
                 ],
                 "single_logout_service": [
                     [
-                        "http://example.com/sp/slo",
+                        "http://sp.example.com/slo",
                         "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
                     ]
                 ]
+            },
+            "subject_data": [
+                "memcached",
+                "localhost:12121"
+            ],
+            "virtual_organization": {
+                "urn:mace:example.com:it:tek": {
+                    "nameid_format": "urn:oid:1.3.6.1.4.1.1466.115.121.1.15-NameID",
+                    "common_identifier": "eduPersonPrincipalName"
+                }
             }
         }
     },
@@ -22,9 +32,16 @@
     "delete_tmpfiles": true,
     "metadata": {
         "local": [
-            "idp.xml"
+            "example.xml"
+        ],
+        "remote": [
+            {
+                "url":"https://kalmar2.org/simplesaml/module.php/aggregator/?id=kalmarcentral2&set=saml2",
+                "cert":"kalmar2.pem"
+            }
         ]
     },
+    "attribute_maps": "attributemaps",
     "organization": {
         "display_name": [
             "Example identities"

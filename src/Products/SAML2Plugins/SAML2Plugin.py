@@ -14,7 +14,9 @@
 """
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from zope.interface import implementer
 
+from .interfaces import ISAML2Plugin
 from .PluginBase import SAML2PluginBase
 
 
@@ -23,6 +25,7 @@ manage_addSAML2PluginForm = PageTemplateFile(
     __name__='manage_addSAML2PluginForm')
 
 
+@implementer(ISAML2Plugin)
 class SAML2Plugin(SAML2PluginBase):
     """ SAML 2.0 plugin class for the PluggableAuthService """
 

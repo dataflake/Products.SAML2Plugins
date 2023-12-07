@@ -1,0 +1,21 @@
+<h1 tal:replace="structure here/manage_page_header">Header</h1>
+
+<h2 tal:define="form_title string:Metadata"
+    tal:replace="structure here/manage_tabs"> TABS </h2>
+
+<main class="container-fluid">
+
+  <h3>SAML 2.0 Metadata configuration</h3>
+
+  <p class="form-help">
+    This plugin can automatically generate SAML 2.0 metadata to describe this
+    service provider from its configuration.
+  </p>
+
+  <pre tal:content="context/getMetadataZMIRepresentation">
+    METADATA
+  </pre>
+
+</main>
+
+<h1 tal:replace="structure here/manage_page_footer">Footer</h1>
