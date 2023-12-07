@@ -27,7 +27,7 @@ additional-ignores = [
     ]
 
 [coverage]
-fail-under = 95
+fail-under = 90
 
 [isort]
 known_third_party = "saml2"

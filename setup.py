@@ -76,8 +76,12 @@ setup(name='Products.SAML2Plugins',
           'pkginfo'
         ],
       },
-      entry_points="""
-      [zope2.initialize]
-      Products.SAML2Plugins = Products.SAML2Plugins:initialize
-      """
+      entry_points={
+        'zope2.initialize':  [
+            'Products.SAML2Plugins = Products.SAML2Plugins:initialize',
+            ],
+        'console_scripts': [
+            'pysaml2_json=Products.SAML2Plugins.utilities:pysaml2_py_to_json',
+            ],
+      },
       )
