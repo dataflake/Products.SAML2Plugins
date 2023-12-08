@@ -12,6 +12,14 @@
     service provider from its configuration.
   </p>
 
+  <p>
+    <a href="" download="metadata.xml"
+       tal:attributes="href string:${context/absolute_url}/@@metadata;
+                       download string:${context/getId}_metadata.xml">
+      Download the metadata file
+    </a>
+  </p>
+
   <pre tal:content="context/getMetadataZMIRepresentation">
     METADATA
   </pre>
