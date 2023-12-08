@@ -70,7 +70,12 @@ class PySAML2ConfigurationSupport:
     @security.protected(manage_users)
     def getConfigurationZMIRepresentation(self):
         """ Returns a configuration representation for the ZMI """
-        configuration = self.getConfiguration()
+        try:
+            configuration = self.getConfiguration()
+        except OSError as exc:
+            return f'Cannot open configuraton file:\n{exc}'
+        except ValueError as exc:
+            return f'Bad configuration:\n{exc}'
 
         return pprint.pformat(configuration)
 
@@ -83,7 +88,12 @@ class PySAML2ConfigurationSupport:
             the problem severity and an explanatory message.
         """
         errors = []
-        configuration = self.getConfiguration()
+        try:
+            configuration = self.getConfiguration()
+        except Exception as exc:
+            return [{'key': '-',
+                     'severity': 'fatal',
+                     'description': f'Cannot load configuration: {exc}'}]
 
         # Check if certificate and key files are configured and readable
         cert_file = configuration.get('cert_file', None)

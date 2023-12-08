@@ -113,27 +113,19 @@ class PySAML2ConfigurationTests(PluginTestBase):
         plugin = self._makeOne('test1')
 
         # No configuration folder path is set
-        with self.assertRaises(ValueError) as context:
-            plugin.getConfigurationZMIRepresentation()
-        self.assertEqual(str(context.exception),
-                         'No configuration folder path set')
+        self.assertIn('No configuration folder path set',
+                      plugin.getConfigurationZMIRepresentation())
 
         # Set a configuration path but the file isn't there
         plugin._configuration_folder = TEST_CONFIG_FOLDER
-
-        with self.assertRaises(OSError) as context:
-            plugin.getConfigurationZMIRepresentation()
-        error_msg = str(context.exception)
+        error_msg = plugin.getConfigurationZMIRepresentation()
         self.assertIn('No such file or directory', error_msg)
         self.assertIn(f'{TEST_CONFIG_FOLDER}', error_msg)
         self.assertIn(plugin.getConfigurationFileName(), error_msg)
 
         # Force a UID that will load an invalid configuration file
         plugin._uid = 'invalid'
-
-        with self.assertRaises(ValueError) as context:
-            plugin.getConfigurationZMIRepresentation()
-        error_msg = str(context.exception)
+        error_msg = plugin.getConfigurationZMIRepresentation()
         self.assertIn('Malformed configuration file', error_msg)
         self.assertIn(f'{TEST_CONFIG_FOLDER}', error_msg)
         self.assertIn(plugin.getConfigurationFileName(), error_msg)
@@ -141,7 +133,6 @@ class PySAML2ConfigurationTests(PluginTestBase):
 
         # Force a UID that will load a valid configuration
         plugin._uid = 'test1'
-
         self.assertIn('sp', plugin.getConfigurationZMIRepresentation())
 
     def test_getConfigurationErrors(self):
@@ -220,3 +211,12 @@ class PySAML2ConfigurationTests(PluginTestBase):
         plugin._v_configuration['organization']['url'] = 'http://localhost'
         faulty_keys = [x['key'] for x in plugin.getConfigurationErrors()]
         self.assertNotIn('organization', faulty_keys)
+
+        # Exceptions loading the configuration don't propagate
+        def error_out():
+            raise ValueError('BAD')
+        plugin.getConfiguration = error_out
+        self.assertEqual(plugin.getConfigurationErrors(),
+                         [{'key': '-',
+                           'severity': 'fatal',
+                           'description': 'Cannot load configuration: BAD'}])
