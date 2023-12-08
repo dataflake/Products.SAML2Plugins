@@ -16,8 +16,8 @@
 import os
 import subprocess
 
-from .base import PluginTestBase
 from .base import TEST_CONFIG_FOLDER
+from .base import PluginTestBase
 
 
 class SAML2MetadataTests(PluginTestBase):

@@ -13,11 +13,9 @@
 """ SAML2Plugin base class unit tests
 """
 
-import os
-
+from .base import TEST_CONFIG_FOLDER
 from .base import InterfaceTestMixin
 from .base import PluginTestBase
-from .base import TEST_CONFIG_FOLDER
 
 
 class SAML2PluginBaseTests(PluginTestBase, InterfaceTestMixin):

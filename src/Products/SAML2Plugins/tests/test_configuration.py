@@ -15,8 +15,8 @@
 
 import os
 
-from .base import PluginTestBase
 from .base import TEST_CONFIG_FOLDER
+from .base import PluginTestBase
 
 
 class PySAML2ConfigurationTests(PluginTestBase):

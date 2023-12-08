@@ -13,4 +13,10 @@ recursive-include docs Makefile
 
 recursive-include src *.py
 include *.yaml
+recursive-include src *.json
+recursive-include src *.key
+recursive-include src *.pem
+recursive-include src *.xml
+recursive-include src *.zcml
 recursive-include src *.zpt
+include src/Products/SAML2Plugins/tests/test_configurations/dummy_xmlsec1

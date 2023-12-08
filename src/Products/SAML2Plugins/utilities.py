@@ -18,6 +18,7 @@ import json
 import os
 import sys
 
+
 pysaml2_py_to_json_usage_text = f"""
 USAGE: {sys.argv[0]} /path/to/configuration.py
 
@@ -26,6 +27,7 @@ representation and prints it to the screen. See
 https://pysaml2.readthedocs.io/en/latest/howto/config.html for details
 on the Python configuration keys.
 """
+
 
 def pysaml2_py_to_json():
     """ Convert a PySAML2 Python configuration to JSON """
