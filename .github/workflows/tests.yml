@@ -54,7 +54,7 @@ jobs:
         pip install tox
         set -ex
         sudo apt update
-        sudo apt install -y xmlsec1 xmlsec1-dev
+        sudo apt install -y xmlsec1
     - name: Test
       run: tox -e ${{ matrix.config[1] }}
     - name: Coverage
