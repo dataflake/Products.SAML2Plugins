@@ -85,7 +85,7 @@ class SAML2PluginBase(BasePlugin,
 
         # Set a unique UID as key for the configuration file
         # so that each plugin in the ZODB can have a unique configuration
-        self._uid = str(uuid.uuid4())
+        self._uid = f'{id}_{str(uuid.uuid4())}'
 
     #
     #   IAuthenticationPlugin implementation
