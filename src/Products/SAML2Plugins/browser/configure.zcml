@@ -4,7 +4,7 @@
 
   <browser:page
     for="Products.SAML2Plugins.interfaces.ISAML2Plugin"
-    name="metadata"
+    name="metadata.xml"
     class=".metadata.SAML2MetadataView"
     permission="zope.Public"
     />
