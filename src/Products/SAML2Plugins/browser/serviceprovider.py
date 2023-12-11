@@ -24,11 +24,11 @@ class SAML2ServiceProviderView(BrowserView):
 
     def __call__(self):
         """ Interact with request from the SAML 2.0 Identity Provider (IdP) """
-        saml_response = request.get('SAMLResponse', '')
-        saml_relay_state = request.get('RelayState', '')
+        saml_response = self.request.get('SAMLResponse', '')
+        saml_relay_state = self.request.get('RelayState', '')
         binding = ''
 
-        if request.method == 'POST':
+        if self.request.method == 'POST':
             # IdP used bindings protocol HTTP-POST
             binding = 'POST'
         else:
@@ -38,6 +38,6 @@ class SAML2ServiceProviderView(BrowserView):
             # see https://en.wikipedia.org/wiki/SAML_2.0#HTTP_Redirect_Binding
             binding = 'REDIRECT'
 
-        return self.context.handleSAML2Request(saml_response,
-                                               saml_relay_state,
-                                               binding)
+        return self.context.handleSAML2Auth(saml_response,
+                                            saml_relay_state,
+                                            binding)
