@@ -19,7 +19,7 @@ from urllib.parse import unquote
 from Products.Five import BrowserView
 
 
-class SAML2ServiceProvider(BrowserView):
+class SAML2ServiceProviderView(BrowserView):
     """ Metadata browser view """
 
     def __call__(self):
