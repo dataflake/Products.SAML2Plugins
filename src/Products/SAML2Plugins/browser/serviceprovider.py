@@ -13,9 +13,6 @@
 """ Browser view for the plugin Service Provider (SP) functionality
 """
 
-import base64
-from urllib.parse import unquote
-
 from Products.Five import BrowserView
 
 
