@@ -13,9 +13,6 @@
 """ Tests for SAML 2.0 metadata generation
 """
 
-import os
-import subprocess
-
 from .base import TEST_CONFIG_FOLDER
 from .base import PluginTestBase
 
@@ -27,19 +24,6 @@ class SAML2MetadataTests(PluginTestBase):
     def _getTargetClass(self):
         from ..PluginBase import SAML2PluginBase
         return SAML2PluginBase
-
-    def _test_path(self, filename):
-        return os.path.join(TEST_CONFIG_FOLDER, filename)
-
-    def _create_valid_configuration(self, plugin):
-        cfg = plugin._v_configuration
-        # Massage a configuration so it becomes valid
-        results = subprocess.run(['which', 'xmlsec1'], capture_output=True)
-        if results.returncode:
-            self.fail('To run this test "xmlsec1" must be on the $PATH')
-        cfg['xmlsec_binary'] = results.stdout.strip().decode()
-        cfg['key_file'] = self._test_path('saml2plugintest.key')
-        cfg['cert_file'] = self._test_path('saml2plugintest.pem')
 
     def test_generateMetadata(self):
         plugin = self._makeOne('test1')

@@ -13,10 +13,13 @@
 """ Configuration support for PySAML2-style configurations as JSON
 """
 
+import copy
 import json
 import operator
 import os
 import pprint
+
+from saml2.config import Config
 
 from AccessControl import ClassSecurityInfo
 from AccessControl.class_init import InitializeClass
@@ -28,6 +31,7 @@ class PySAML2ConfigurationSupport:
 
     security = ClassSecurityInfo()
     _v_configuration = None
+    _v_pysaml2_configuration = None
 
     #
     # ZMI helpers
@@ -209,6 +213,18 @@ class PySAML2ConfigurationSupport:
             return self._v_configuration
 
         return self._v_configuration[key]
+
+    @security.private
+    def getPySAML2Configuration(self):
+        """ Create a pysaml2 configuration object from the internal
+        configuration
+        """
+        if self._v_pysaml2_configuration is None:
+            pysaml2_config = Config()
+            pysaml2_config.load(copy.deepcopy(self.getConfiguration()))
+            self._v_pysaml2_configuration = pysaml2_config
+
+        return self._v_pysaml2_configuration
 
     def _load_configuration_file(self):
         """ Load a pysaml2 configuration as JSON

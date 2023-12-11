@@ -14,11 +14,12 @@
 """
 
 import os
+import subprocess
 import unittest
 
 
 here = os.path.dirname(os.path.abspath(__file__))
-TEST_CONFIG_FOLDER = os.path.join(here, 'test_configurations')
+TEST_CONFIG_FOLDER = os.path.join(here, 'test_data')
 
 
 class PluginTestBase(unittest.TestCase):
@@ -32,6 +33,23 @@ class PluginTestBase(unittest.TestCase):
 
     def _getTargetClass(self):
         raise NotImplementedError('Must be implemented in derived classes')
+
+    def _test_path(self, filename):
+        return os.path.join(TEST_CONFIG_FOLDER, filename)
+
+    def _create_valid_configuration(self, plugin):
+        cfg = plugin._v_configuration
+        # Massage a configuration so it becomes valid
+        results = subprocess.run(['which', 'xmlsec1'], capture_output=True)
+        if results.returncode:
+            self.fail('To run this test "xmlsec1" must be on the $PATH')
+        cfg['xmlsec_binary'] = results.stdout.strip().decode()
+        cfg['key_file'] = self._test_path('saml2plugintest.key')
+        cfg['cert_file'] = self._test_path('saml2plugintest.pem')
+        cfg['metadata'] = {}
+        cfg['metadata']['local'] = [self._test_path('mocksaml_metadata.xml')]
+        # This should only be used for testing
+        cfg['service']['sp']['allow_unsolicited'] = True
 
 
 class InterfaceTestMixin:

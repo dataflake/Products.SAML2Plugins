@@ -9,4 +9,11 @@
     permission="zope.Public"
     />
 
+  <browser:page
+    for="Products.SAML2Plugins.interfaces.ISAML2Plugin"
+    name="sp"
+    class=".serviceprovider.SAML2ServiveProviderView"
+    permission="zope.Public"
+    />
+
 </configure>

@@ -33,11 +33,13 @@ from Products.PluggableAuthService.utils import classImplements
 
 from .configuration import PySAML2ConfigurationSupport
 from .metadata import SAML2MetadataProvider
+from .saml2handler import SAML2Handler
 
 
 class SAML2PluginBase(BasePlugin,
                       PySAML2ConfigurationSupport,
-                      SAML2MetadataProvider):
+                      SAML2MetadataProvider,
+                      SAML2Handler):
     """ SAML 2.0 base plugin class """
 
     security = ClassSecurityInfo()
