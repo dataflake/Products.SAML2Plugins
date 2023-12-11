@@ -52,7 +52,7 @@ class SAML2HandlerTests(PluginTestBase):
         plugin = self._makeOne()
 
         # Empty SAML reponse
-        self.assertIsNone(plugin.handleSAML2Auth(''))
+        self.assertEqual(plugin.handleSAML2Auth(''), {})
 
         # SAML response from https://mocksaml.com
         with open(self._test_path('samlresponse1.txt'), 'r') as fp:

@@ -26,7 +26,7 @@ class SAML2ServiceProviderViewTests(PluginViewsTestBase):
         view = self._makeOne()
 
         # The request doesn't carry any SAML data yet
-        self.assertIsNone(view())
+        self.assertEqual(view(), {})
 
         # SAML response from https://mocksaml.com
         with open(self._test_path('samlresponse1.txt'), 'r') as fp:

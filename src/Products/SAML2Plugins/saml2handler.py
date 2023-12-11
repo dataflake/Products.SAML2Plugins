@@ -55,6 +55,7 @@ class SAML2Handler:
     @security.private
     def handleSAML2Auth(self, saml_response, relay_state='', binding='POST'):
         """ Handle an incoming SAML 2.0 authentication response """
+        session_info = {}
         saml2_client = self.getPySAML2Client()
         if binding == 'POST':
             saml_binding = BINDING_HTTP_POST
@@ -63,8 +64,11 @@ class SAML2Handler:
 
         saml_resp = saml2_client.parse_authn_request_response(
                         saml_response, saml_binding)
+        if saml_resp is not None:
+            session_info = saml_resp.session_info()
+            print(session_info)
 
-        return saml_resp
+        return session_info
 
 
 InitializeClass(SAML2Handler)
