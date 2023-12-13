@@ -26,5 +26,4 @@ class SAML2MetadataViewTests(PluginViewsTestBase):
         view = self._makeOne()
         result = view()
 
-        self.assertIsInstance(result, str)
-        self.assertTrue(result.startswith('<ns0:EntitiesDescriptor'))
+        self.assertTrue(result.startswith('<ns0:EntityDescriptor'))

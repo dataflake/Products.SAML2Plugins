@@ -64,7 +64,7 @@ class SAML2Handler:
             session_info = saml_resp.session_info()
             print(session_info)
 
-        return session_info
+        return 'Success'
 
 
 InitializeClass(SAML2Handler)

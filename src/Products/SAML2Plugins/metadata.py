@@ -20,6 +20,7 @@ from saml2.config import Config
 from saml2.metadata import entities_descriptor
 from saml2.metadata import entity_descriptor
 from saml2.metadata import metadata_tostring_fix
+from saml2.metadata import sign_entity_descriptor
 from saml2.sigver import security_context
 from saml2.validate import valid_instance
 
@@ -39,7 +40,7 @@ class SAML2MetadataProvider:
             data_dom = parseString(self.generateMetadata())
             return data_dom.toprettyxml(indent='  ')
         except Exception as exc:
-            return ('Error creating metadata representiation:\n'
+            return ('Error creating metadata representation:\n'
                     f'{exc}')
 
     @security.protected(manage_users)
@@ -56,31 +57,39 @@ class SAML2MetadataProvider:
         config = copy.deepcopy(self.getConfiguration())
         xmldoc = None
 
-        # To make sure signing information only shows up on the enclosing
-        # envelope, remove it for the entity configuration.
-        key_file = config.pop('key_file', '')
-        cert_file = config.pop('cert_file', '')
-
         # Configuration for a single entity (XML EntityDescriptor element)
         entity_cfg = Config().load(config)
         entity = entity_descriptor(entity_cfg)
 
-        # Configuration for the XML EntityDescriptors envelope
-        pysaml2_conf = Config()
-        pysaml2_conf.key_file = key_file
-        pysaml2_conf.cert_file = cert_file
-        pysaml2_conf.debug = 1
-        pysaml2_conf.xmlsec_binary = config.get('xmlsec1_binary')
-        security_ctx = security_context(pysaml2_conf)
+        if self.metadata_envelope:
+            # To make sure signing information only shows up on the enclosing
+            # envelope, remove it for the entity configuration.
+            key_file = config.pop('key_file', '')
+            cert_file = config.pop('cert_file', '')
 
-        entities, xmldoc = entities_descriptor([entity],
-                                               self.metadata_valid or 0,
-                                               '',  # name argument
-                                               self._uid,  # id argument
-                                               self.metadata_sign,
-                                               security_ctx)
-        valid_instance(entities)
-        xmldoc = metadata_tostring_fix(entities, nspair, xmldoc)
+            # Configuration for the XML EntityDescriptors envelope
+            pysaml2_conf = Config()
+            pysaml2_conf.key_file = key_file
+            pysaml2_conf.cert_file = cert_file
+            pysaml2_conf.debug = 1
+            pysaml2_conf.xmlsec_binary = config.get('xmlsec1_binary')
+            security_ctx = security_context(pysaml2_conf)
+
+            entities, xmldoc = entities_descriptor([entity],
+                                                   self.metadata_valid or 0,
+                                                   '',  # name argument
+                                                   self._uid,  # id argument
+                                                   self.metadata_sign,
+                                                   security_ctx)
+            valid_instance(entities)
+            xmldoc = metadata_tostring_fix(entities, nspair, xmldoc)
+        else:
+            valid_instance(entity)
+            if self.metadata_sign:
+                security_ctx = security_context(entity_cfg)
+                entity, xmldoc = sign_entity_descriptor(
+                                    entity, config['entityid'], security_ctx)
+            xmldoc = metadata_tostring_fix(entity, nspair, xmldoc)
 
         if isinstance(xmldoc, bytes):
             return xmldoc.decode("utf-8")

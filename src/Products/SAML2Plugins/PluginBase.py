@@ -45,6 +45,7 @@ class SAML2PluginBase(BasePlugin,
     security = ClassSecurityInfo()
     metadata_valid = 2
     metadata_sign = False
+    metadata_envelope = False
 
     security.declareProtected(manage_users, 'manage_configuration')
     manage_configuration = PageTemplateFile(
@@ -68,6 +69,10 @@ class SAML2PluginBase(BasePlugin,
                      'mode': 'w'},
                     {'id': 'metadata_sign',
                      'label': 'Sign metadata',
+                     'type': 'boolean',
+                     'mode': 'w'},
+                    {'id': 'metadata_envelope',
+                     'label': 'Use enclosing metadata EntitiesDescriptor',
                      'type': 'boolean',
                      'mode': 'w'},)
                    + BasePlugin._properties)

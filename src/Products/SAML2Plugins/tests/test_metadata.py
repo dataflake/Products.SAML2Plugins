@@ -37,9 +37,15 @@ class SAML2MetadataTests(PluginTestBase):
         # Massage the configuration to make it valid
         self._create_valid_configuration(plugin)
 
-        # Just seeing that this does not fail
+        # Use an envelope
+        plugin.metadata_envelope = True
         xml_string = plugin.generateMetadata()
-        self.assertIsInstance(xml_string, str)
+        self.assertTrue(xml_string.startswith('<ns0:EntitiesDescriptor'))
+
+        # No envelope
+        plugin.metadata_envelope = False
+        xml_string = plugin.generateMetadata()
+        self.assertTrue(xml_string.startswith('<ns0:EntityDescriptor'))
 
     def test_getMetadataZMIRepresentation(self):
         plugin = self._makeOne('test1')
@@ -51,12 +57,18 @@ class SAML2MetadataTests(PluginTestBase):
         plugin.getConfiguration()  # Generate the internal configuration
 
         # Without massaging the configuration the method will return an error
-        self.assertIn('Error creating metadata representiation:',
+        self.assertIn('Error creating metadata representation:',
                       plugin.getMetadataZMIRepresentation())
 
         # Massage the configuration to make it valid
         self._create_valid_configuration(plugin)
 
-        # Just seeing that this does not fail
+        # Use an envelope
+        plugin.metadata_envelope = True
         xml_string = plugin.getMetadataZMIRepresentation()
-        self.assertIsInstance(xml_string, str)
+        self.assertIn('<ns0:EntitiesDescriptor', xml_string)
+
+        # No envelope
+        plugin.metadata_envelope = False
+        xml_string = plugin.getMetadataZMIRepresentation()
+        self.assertIn('<ns0:EntityDescriptor', xml_string)
