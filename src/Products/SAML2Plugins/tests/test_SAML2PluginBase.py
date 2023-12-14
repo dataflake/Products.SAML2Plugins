@@ -13,6 +13,7 @@
 """ SAML2Plugin base class unit tests
 """
 
+from ..configuration import getConfigurationDict
 from .base import TEST_CONFIG_FOLDER
 from .base import InterfaceTestMixin
 from .base import PluginTestBase
@@ -29,7 +30,7 @@ class SAML2PluginBaseTests(PluginTestBase, InterfaceTestMixin):
         self.assertEqual(plugin.getId(), 'test1')
         self.assertEqual(plugin.title, '')
         self.assertIsNone(plugin.getConfigurationFolderPath())
-        self.assertIsNone(plugin._v_configuration)
+        self.assertIsNone(getConfigurationDict(plugin._uid))
         self.assertIsInstance(plugin._uid, str)
         self.assertTrue(plugin._uid)
 
@@ -40,6 +41,6 @@ class SAML2PluginBaseTests(PluginTestBase, InterfaceTestMixin):
         self.assertEqual(plugin.title, 'This is a test')
         self.assertEqual(plugin.getConfigurationFolderPath(),
                          TEST_CONFIG_FOLDER)
-        self.assertIsNone(plugin._v_configuration)
+        self.assertIsNone(getConfigurationDict(plugin._uid))
         self.assertIsInstance(plugin._uid, str)
         self.assertTrue(plugin._uid)

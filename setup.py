@@ -80,8 +80,5 @@ setup(name='Products.SAML2Plugins',
         'zope2.initialize':  [
             'Products.SAML2Plugins = Products.SAML2Plugins:initialize',
             ],
-        'console_scripts': [
-            'pysaml2_json=Products.SAML2Plugins.utilities:pysaml2_py_to_json',
-            ],
       },
       )

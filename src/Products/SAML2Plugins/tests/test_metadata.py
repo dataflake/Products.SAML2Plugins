@@ -29,7 +29,7 @@ class SAML2MetadataTests(PluginTestBase):
         plugin = self._makeOne('test1')
         plugin._configuration_folder = TEST_CONFIG_FOLDER
 
-        # Using the configuration at saml2plugin_valid.json
+        # Using the configuration at saml2plugin_valid.py
         # to start with.
         plugin._uid = 'valid'
         plugin.getConfiguration()  # Generate the internal configuration
@@ -51,7 +51,7 @@ class SAML2MetadataTests(PluginTestBase):
         plugin = self._makeOne('test1')
         plugin._configuration_folder = TEST_CONFIG_FOLDER
 
-        # Using the configuration at saml2plugin_valid.json
+        # Using the configuration at saml2plugin_valid.py
         # to start with.
         plugin._uid = 'valid'
         plugin.getConfiguration()  # Generate the internal configuration

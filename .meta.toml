@@ -15,6 +15,12 @@ with-macos = false
 [tox]
 use-flake8 = true
 
+[flake8]
+additional-config = [
+    "exclude =",
+    "    src/Products/SAML2Plugins/tests/test_data/*.py",
+    ]
+
 [manifest]
 additional-rules = [
     "include *.yaml",

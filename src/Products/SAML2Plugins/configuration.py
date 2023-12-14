@@ -14,10 +14,11 @@
 """
 
 import copy
-import json
+import importlib
 import operator
 import os
 import pprint
+import sys
 
 from saml2.config import Config
 
@@ -26,12 +27,66 @@ from AccessControl.class_init import InitializeClass
 from AccessControl.Permissions import manage_users
 
 
+CONFIGS = {}
+
+
+def getConfigurationDict(uid):
+    """ Retrieve a configuration mapping by plugin UID
+
+    Args:
+        uid (str): The plugin UID
+
+    Returns:
+        A dictionary object or None
+    """
+    return CONFIGS.get(uid, None)
+
+
+def getPySAML2Configuration(uid):
+    """ Retrieve a PySAML2 configuration by plugin UID
+
+    Args:
+        uid (str): The plugin UID
+
+    Returns:
+        A PySAML2 configuration object or None
+    """
+    return CONFIGS.get(f'pysaml2_{uid}', None)
+
+
+def setPySAML2Configuration(uid, config):
+    """ Cache a PySAML2 configuration object
+
+    Args:
+        uid (str): A unique identifier (the plugin UID)
+
+        config (saml2.config.Config or None):
+            A PySAML2 configuration instance or None to clear it
+    """
+    CONFIGS[f'pysaml2_{uid}'] = config
+
+
+def setConfigurationDict(uid, config):
+    """ Cache a configuration mapping
+
+    Args:
+        uid (str): A unique identifier (the plugin UID)
+
+        config (dict or None):
+            A dictionary instance or None to clear it
+    """
+    CONFIGS[uid] = config
+
+
+def clearAllCaches():
+    """ Clear all cached configurations, used by unit tests """
+    CONFIGS.clear()
+
+
 class PySAML2ConfigurationSupport:
     """ SAML 2.0 base plugin class """
 
     security = ClassSecurityInfo()
-    _v_configuration = None
-    _v_pysaml2_configuration = None
 
     #
     # ZMI helpers
@@ -39,7 +94,12 @@ class PySAML2ConfigurationSupport:
     @security.protected(manage_users)
     def getConfigurationFileName(self):
         """ Get the fixed configuration file name for this plugin instance """
-        return f'saml2plugin_{self._uid}.json'
+        return f'saml2_cfg_{self._uid}.py'
+
+    @security.private
+    def getConfigurationModuleName(self):
+        """ Get the configuration module name for importing it """
+        return os.path.splitext(self.getConfigurationFileName())[0]
 
     @security.protected(manage_users)
     def getConfigurationFolderPath(self):
@@ -190,7 +250,7 @@ class PySAML2ConfigurationSupport:
         ``BINDING_HTTP_REDIRECT``. In the JSON file you must use the real value
         string, like 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'.
 
-        Stores the extracted configuration values in an instance-level
+        Stores the extracted configuration values in a module-level
         mapping for easy retrieval later.
 
         Args:
@@ -203,42 +263,63 @@ class PySAML2ConfigurationSupport:
 
         Raises ``KeyError`` if the configuration does not contain the key
         """
-        if self._v_configuration is None or reload is True:
+        cfg_dict = getConfigurationDict(self._uid)
+
+        if cfg_dict is None or reload is True:
             if self.getConfigurationFolderPath() is None:
                 raise ValueError('No configuration folder path set')
 
-            self._v_configuration = self._load_configuration_file()
+            cfg_dict = self._load_configuration_file()
+            setConfigurationDict(self._uid, cfg_dict)
 
         if key is None:
-            return self._v_configuration
+            return cfg_dict
 
-        return self._v_configuration[key]
+        return cfg_dict[key]
 
     @security.private
     def getPySAML2Configuration(self):
         """ Create a pysaml2 configuration object from the internal
         configuration
         """
-        if self._v_pysaml2_configuration is None:
-            pysaml2_config = Config()
-            pysaml2_config.load(copy.deepcopy(self.getConfiguration()))
-            self._v_pysaml2_configuration = pysaml2_config
+        cfg = getPySAML2Configuration(self._uid)
 
-        return self._v_pysaml2_configuration
+        if cfg is None:
+            cfg = Config()
+            cfg.load(copy.deepcopy(self.getConfiguration()))
+            setPySAML2Configuration(self._uid, cfg)
+
+        return cfg
 
     def _load_configuration_file(self):
-        """ Load a pysaml2 configuration as JSON
-        """
-        configuration_path = os.path.join(self.getConfigurationFolderPath(),
-                                          self.getConfigurationFileName())
-        with open(configuration_path, 'r') as fp:
-            try:
-                configuration = json.load(fp)
-            except json.JSONDecodeError as exc:
-                raise ValueError('Malformed configuration file at '
-                                 f'{configuration_path}: {str(exc)}')
+        """ Load a pysaml2 configuration file
 
-        return configuration
+        Returns:
+            The dictionary named CONFIG
+
+        Raises:
+            ValueError if the file cannot be imported or the attribute
+            CONFIG does not exist
+        """
+        mod_parent_path = self.getConfigurationFolderPath()
+        cfg_path = self.getConfigurationFilePath()
+        if mod_parent_path not in sys.path:
+            sys.path.insert(0, mod_parent_path)
+
+        try:
+            mod = importlib.import_module(self.getConfigurationModuleName())
+            cfg = copy.deepcopy(mod.CONFIG)
+        except ModuleNotFoundError:
+            raise ValueError(f'Missing configuration file at {cfg_path}')
+        except Exception as exc:
+            raise ValueError('Malformed configuration file at '
+                             f'{cfg_path}: {str(exc)}')
+
+        # Clean up sys.path and imports
+        sys.path.remove(mod_parent_path)
+        del mod
+
+        return cfg
 
 
 InitializeClass(PySAML2ConfigurationSupport)

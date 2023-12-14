@@ -17,12 +17,19 @@ import os
 import subprocess
 import unittest
 
+from ..configuration import clearAllCaches
+from ..configuration import setConfigurationDict
+
 
 here = os.path.dirname(os.path.abspath(__file__))
 TEST_CONFIG_FOLDER = os.path.join(here, 'test_data')
 
 
 class PluginTestBase(unittest.TestCase):
+
+    def setUp(self):
+        super().setUp()
+        clearAllCaches()
 
     def _makeOne(self, *args, **kw):
         configuration_folder = kw.pop('configuration_folder', None)
@@ -38,7 +45,7 @@ class PluginTestBase(unittest.TestCase):
         return os.path.join(TEST_CONFIG_FOLDER, filename)
 
     def _create_valid_configuration(self, plugin):
-        cfg = plugin._v_configuration
+        cfg = plugin.getConfiguration()
         # Massage a configuration so it becomes valid
         results = subprocess.run(['which', 'xmlsec1'], capture_output=True)
         if results.returncode:
@@ -50,6 +57,7 @@ class PluginTestBase(unittest.TestCase):
         cfg['metadata']['local'] = [self._test_path('mocksaml_metadata.xml')]
         # This should only be used for testing
         cfg['service']['sp']['allow_unsolicited'] = True
+        setConfigurationDict(plugin._uid, cfg)
 
 
 class InterfaceTestMixin:
