@@ -13,6 +13,8 @@
 """ Tests for SAML 2.0 service provider view
 """
 
+from unittest.mock import MagicMock
+
 from .base import PluginViewsTestBase
 
 
@@ -22,15 +24,34 @@ class SAML2ServiceProviderViewTests(PluginViewsTestBase):
         from ..serviceprovider import SAML2ServiceProviderView
         return SAML2ServiceProviderView
 
-    def test___call__(self):
+    def test___call__POST(self):
         view = self._makeOne()
+        view.request.method = 'POST'
+        req = view.request
+        plugin = view.context
 
         # The request doesn't carry any SAML data yet
         self.assertEqual(view(), 'Failure')
+        self.assertFalse(req.SESSION.get(plugin._uid))
 
-        ## SAML response from https://mocksaml.com
-        #with open(self._test_path('samlresponse1.txt'), 'r') as fp:
-        #    view.request['SAMLResponse'] = fp.read()
-        #view.request['RelayState'] = 'http://foo'
-        #view.request.method = 'POST'
-        #self.assertIn('jenstest@example.com', str(view()))
+        # Mocking out a successful SAML interaction result
+        user_info = {'foo': 'bar'}
+        view.context.handleSAML2Response = MagicMock(return_value=user_info)
+        self.assertEqual(view(), 'Success')
+        self.assertEqual(req.SESSION[plugin._uid], user_info)
+
+    def test___call__REDIRECT(self):
+        view = self._makeOne()
+        view.request.method = 'GET'
+        req = view.request
+        plugin = view.context
+
+        # The request doesn't carry any SAML data yet
+        self.assertEqual(view(), 'Failure')
+        self.assertFalse(req.SESSION.get(plugin._uid))
+
+        # Mocking out a successful SAML interaction result
+        user_info = {'foo': 'bar'}
+        view.context.handleSAML2Response = MagicMock(return_value=user_info)
+        self.assertEqual(view(), 'Success')
+        self.assertEqual(req.SESSION[plugin._uid], user_info)

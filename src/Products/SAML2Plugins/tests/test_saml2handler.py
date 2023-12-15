@@ -16,8 +16,8 @@
 from saml2.cache import Cache
 from saml2.client import Saml2Client
 
-from .base import TEST_CONFIG_FOLDER
 from .base import PluginTestCase
+from .dummy import DummyNameId
 
 
 class SAML2HandlerTests(PluginTestCase):
@@ -29,9 +29,6 @@ class SAML2HandlerTests(PluginTestCase):
     def _makeOne(self):
         # For these tests we always want a correctly configured plugin
         plugin = self._getTargetClass()('test')
-        plugin._configuration_folder = TEST_CONFIG_FOLDER
-        plugin._uid = 'valid'
-        plugin.getConfiguration()
         self._create_valid_configuration(plugin)
         return plugin
 
@@ -48,15 +45,18 @@ class SAML2HandlerTests(PluginTestCase):
         # will return it from cache, so the objects should be identical
         self.assertTrue(saml2_client is plugin.getPySAML2Client())
 
+    def test_logoutLocally(self):
+        plugin = self._makeOne()
+        name_id = DummyNameId('testid')
+
+        # This user is not logged in for PySAML2, so the call will fail
+        with self.assertRaises(KeyError):
+            plugin.logoutLocally(name_id)
+
     def test_handleSAML2Response(self):
         plugin = self._makeOne()
 
         # Empty SAML response
         self.assertEqual(plugin.handleSAML2Response(''), {})
 
-        ## SAML response from https://mocksaml.com
-        #with open(self._test_path('samlresponse1.txt'), 'r') as fp:
-        #    saml_response = fp.read()
-        #result = plugin.handleSAML2Response(saml_response,
-        #                                    binding='POST')
-        #self.assertIn('jenstest@example.com', str(result))
+        # XXX There should be more tests here

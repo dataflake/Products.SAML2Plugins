@@ -60,7 +60,7 @@ class SAML2Handler:
             A mapping with user
         """
         client = self.getPySAML2Client()
-        return client.users.is_logged_in(name_id_instance)
+        return client.is_logged_in(name_id_instance)
 
     @security.private
     def logoutLocally(self, name_id_instance):

@@ -107,7 +107,7 @@ class SAML2PluginBase(BasePlugin,
         Returns:
             A tuple consisting of user ID and login.
         """
-        if credentials.get(self._uid, None) is None:
+        if credentials.get('plugin_uid', None) != self._uid:
             # The passed-in credentials did not come from this plugin, fail
             return None
 
@@ -128,12 +128,14 @@ class SAML2PluginBase(BasePlugin,
 
         Challenge the user for credentials.
         """
+        url = self.getAuthenticationRedirect()
+
         came_from_url = request.get('ACTUAL_URL')
-        qs = request.get('QUERY_STRING')
-        if qs:
-            came_from_url = f'{came_from_url}?{qs}'
-        url = (f'{self.getAuthenticationRedirect()}'
-               f'&RelayState={quote(came_from_url)}')
+        if came_from_url:
+            qs = request.get('QUERY_STRING')
+            if qs:
+                came_from_url = f'{came_from_url}?{qs}'
+            url = f'{url}&RelayState={quote(came_from_url)}'
 
         response.redirect(url, lock=1)
 

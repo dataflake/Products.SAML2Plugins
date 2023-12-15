@@ -14,18 +14,56 @@
 """
 
 
+class DummySession(dict):
+
+    def set(self, key, value):
+        self[key] = value
+
+
+class DummyUser:
+
+    def __init__(self, name):
+        self.name = name
+
+    def getId(self):
+        return self.name
+
+
 class DummyResponse:
 
     def __init__(self):
         self.redirected = ''
         self.locked = False
+        self.headers = {}
 
     def redirect(self, target, lock=False):
         self.redirected = target
         self.locked = lock
 
+    def setHeader(self, name, value):
+        self.headers[name] = value
+
 
 class DummyRequest:
 
     def __init__(self):
-        self.RESPONSE = DummyResponse()
+        self.RESPONSE = self.response = DummyResponse()
+        self.SESSION = DummySession()
+        self.data = {}
+
+    def set(self, key, value):
+        self.data[key] = value
+
+    def get(self, key, default=None):
+        return self.data.get(key, default)
+
+
+class DummyNameId:
+
+    def __init__(self, name):
+        self.name = name
+        self.name_qualifier = 'name_qualifier_value'
+        self.sp_name_qualifier = 'sp_name_qualifier_value'
+        self.format = 'format_value'
+        self.sp_provided_id = 'sp_provided_id_value'
+        self.text = name

@@ -58,7 +58,7 @@ class PySAML2ConfigurationTests(PluginTestCase):
     def test_haveConfigurationFile(self):
         plugin = self._makeOne('test1')
 
-        # No configuration folder is set
+        # Default configuration folder is set, which does not have a file
         self.assertFalse(plugin.haveConfigurationFile())
 
         # Set a configuration folder path, file does not exist
@@ -72,7 +72,7 @@ class PySAML2ConfigurationTests(PluginTestCase):
     def test_getConfiguration(self):
         plugin = self._makeOne('test1')
 
-        # No valid configuration folder path is set
+        # Default configuration folder is set, which does not have a file
         with self.assertRaises(ValueError) as context:
             plugin.getConfiguration('service')
         self.assertIn('Missing configuration file', str(context.exception))
@@ -116,7 +116,7 @@ class PySAML2ConfigurationTests(PluginTestCase):
     def test_getConfigurationZMIRepresentation(self):
         plugin = self._makeOne('test1')
 
-        # No configuration folder path is set
+        # Default configuration folder is set, which does not have a file
         self.assertIn('Missing configuration file',
                       plugin.getConfigurationZMIRepresentation())
 
@@ -135,10 +135,27 @@ class PySAML2ConfigurationTests(PluginTestCase):
         self.assertIn(plugin.getConfigurationFileName(), error_msg)
         self.assertIn('invalid syntax', error_msg)
 
-        # Force a UID that will load a valid configuration
-        plugin._uid = 'valid'
+        # Force a valid configuration
         self._create_valid_configuration(plugin)
         self.assertIn('sp', plugin.getConfigurationZMIRepresentation())
+
+    def test_getPySAML2Configuration(self):
+        from ..configuration import getPySAML2Configuration
+        from ..configuration import setPySAML2Configuration
+
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+        old_cfg = getPySAML2Configuration(plugin._uid)
+
+        # saml2 configuration instance, the actual value is not important
+        self.assertTrue(plugin.getPySAML2Configuration().entityid)
+
+        # Force-set configuration
+        setPySAML2Configuration(plugin._uid, 'something')
+        self.assertEqual(plugin.getPySAML2Configuration(), 'something')
+
+        # Cleanup
+        setPySAML2Configuration(plugin._uid, old_cfg)
 
     def test_getConfigurationErrors(self):
         plugin = self._makeOne('test2')

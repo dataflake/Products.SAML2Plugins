@@ -129,12 +129,7 @@ class PySAML2ConfigurationSupport:
     @security.protected(manage_users)
     def getConfigurationFilePath(self):
         """ Get the full configuration file path for this plugin instance.
-
-        Returns None if the configuration folder path is not configured.
         """
-        if self.getConfigurationFolderPath() is None:
-            return None
-
         file_path = os.path.join(self.getConfigurationFolderPath(),
                                  self.getConfigurationFileName())
         return os.path.abspath(file_path)
@@ -142,9 +137,6 @@ class PySAML2ConfigurationSupport:
     @security.protected(manage_users)
     def haveConfigurationFile(self):
         """ Returns True if a configuration file exists, False otherwise. """
-        if not self.getConfigurationFolderPath():
-            return False
-
         return os.path.isfile(self.getConfigurationFilePath())
 
     @security.protected(manage_users)
@@ -152,8 +144,6 @@ class PySAML2ConfigurationSupport:
         """ Returns a configuration representation for the ZMI """
         try:
             configuration = self.getConfiguration()
-        except OSError as exc:
-            return f'Cannot open configuraton file:\n{exc}'
         except ValueError as exc:
             return f'Bad configuration:\n{exc}'
 
@@ -282,9 +272,6 @@ class PySAML2ConfigurationSupport:
         cfg_dict = getConfigurationDict(self._uid)
 
         if cfg_dict is None or reload is True:
-            if self.getConfigurationFolderPath() is None:
-                raise ValueError('No configuration folder path set')
-
             cfg_dict = self._load_configuration_file()
             setConfigurationDict(self._uid, cfg_dict)
 

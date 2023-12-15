@@ -13,19 +13,15 @@
 """ Test case for SAML 2.0 plugin views
 """
 
-from Testing.makerequest import makerequest
-
 from ...SAML2Plugin import SAML2Plugin
 from ...tests.base import TEST_CONFIG_FOLDER
 from ...tests.base import PluginTestCase
+from ...tests.dummy import DummyRequest
 
 
 class PluginViewsTestBase(PluginTestCase):
 
     def _makeOne(self):
-        plugin = makerequest(SAML2Plugin('test'))
-        plugin._uid = 'valid'
-        plugin._configuration_folder = TEST_CONFIG_FOLDER
-        plugin.getConfiguration()
+        plugin = SAML2Plugin('test')
         self._create_valid_configuration(plugin)
-        return self._getTargetClass()(plugin, plugin.REQUEST)
+        return self._getTargetClass()(plugin, DummyRequest())

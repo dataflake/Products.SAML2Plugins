@@ -16,10 +16,15 @@
 import os
 import subprocess
 import unittest
+import urllib
+from unittest.mock import MagicMock
 
 from ..configuration import clearAllCaches
 from ..configuration import getConfigurationDict
 from ..configuration import setConfigurationDict
+from .dummy import DummyNameId
+from .dummy import DummyRequest
+from .dummy import DummyUser
 
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -46,6 +51,8 @@ class PluginTestCase(unittest.TestCase):
         return os.path.join(TEST_CONFIG_FOLDER, filename)
 
     def _create_valid_configuration(self, plugin):
+        plugin._configuration_folder = TEST_CONFIG_FOLDER
+        plugin._uid = 'valid'
         cfg = plugin.getConfiguration()
         # Massage a configuration so it becomes valid
         results = subprocess.run(['which', 'xmlsec1'], capture_output=True)
@@ -109,3 +116,126 @@ class SAML2PluginBaseTests:
         self.assertIsNone(getConfigurationDict(plugin._uid))
         self.assertIsInstance(plugin._uid, str)
         self.assertTrue(plugin._uid)
+
+    def test_authenticateCredentials(self):
+        plugin = self._makeOne('test1')
+
+        # Plugin UID not in credentials
+        creds = {'login': 'testuser'}
+        self.assertIsNone(plugin.authenticateCredentials(creds))
+
+        # Bad plugin uid in credentials
+        creds = {'login': 'testuser', 'plugin_uid': 'bad'}
+        self.assertIsNone(plugin.authenticateCredentials(creds))
+
+        # Correct UID but no login information
+        creds = {'plugin_uid': plugin._uid}
+        self.assertIsNone(plugin.authenticateCredentials(creds))
+
+        # Correct UID
+        creds = {'login': 'testuser', 'plugin_uid': plugin._uid}
+        self.assertEqual(plugin.authenticateCredentials(creds),
+                         ('testuser', 'testuser'))
+
+    def test_challenge(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+        req = DummyRequest()
+        response = req.RESPONSE
+
+        # Empty request
+        self.assertTrue(plugin.challenge(req, response))
+        self.assertTrue(response.locked)
+        self.assertIn('SAMLRequest=', response.redirected)
+        self.assertNotIn('RelayState', response.redirected)
+
+        # Set a return URL
+        return_url = 'https://foo'
+        req.set('ACTUAL_URL', return_url)
+        self.assertTrue(plugin.challenge(req, response))
+        self.assertTrue(response.locked)
+        self.assertIn('SAMLRequest=', response.redirected)
+        self.assertIn(f'RelayState={urllib.parse.quote(return_url)}',
+                      response.redirected)
+
+        # Set a return URL and a query string
+        query_string = 'came_from=/foo/bar'
+        full_url = f'{return_url}?{query_string}'
+        req.set('QUERY_STRING', query_string)
+        self.assertTrue(plugin.challenge(req, response))
+        self.assertTrue(response.locked)
+        self.assertIn('SAMLRequest=', response.redirected)
+        self.assertIn(f'RelayState={urllib.parse.quote(full_url)}',
+                      response.redirected)
+
+    def test_resetCredentials(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+        req = DummyRequest()
+        session = req.SESSION
+
+        self.assertFalse(session.get(plugin._uid))
+        session[plugin._uid] = {'name_id': DummyNameId('foo')}
+        self.assertTrue(session.get(plugin._uid))
+        plugin.resetCredentials(req, req.RESPONSE)
+        self.assertFalse(session.get(plugin._uid))
+
+        # act like the user was logged in
+        plugin.isLoggedIn = MagicMock(return_value=True)
+        plugin.logoutLocally = MagicMock(return_value=True)
+        session[plugin._uid] = {'name_id': DummyNameId('foo')}
+        self.assertTrue(session.get(plugin._uid))
+        plugin.resetCredentials(req, req.RESPONSE)
+        self.assertFalse(session.get(plugin._uid))
+
+    def test_extractCredentials(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+        req = DummyRequest()
+        session = req.SESSION
+
+        # No session data yet
+        self.assertEqual(plugin.extractCredentials(req),
+                         {'plugin_uid': plugin._uid})
+
+        # Add some session data
+        req.set('REMOTE_ADDR', '0.0.0.0')
+        session[plugin._uid] = {'name_id': DummyNameId('foo'),
+                                plugin.login_attribute: 'testuser1',
+                                'issuer': 'https://samltest'}
+
+        # The user is not logged in, no user data should be returned
+        plugin.isLoggedIn = MagicMock(return_value=False)
+        self.assertEqual(plugin.extractCredentials(req),
+                         {'plugin_uid': plugin._uid})
+
+        # User is logged in
+        plugin.isLoggedIn = MagicMock(return_value=True)
+        self.assertEqual(plugin.extractCredentials(req),
+                         {'plugin_uid': plugin._uid,
+                          'login': 'testuser1',
+                          'password': '',
+                          'remote_host': 'https://samltest',
+                          'remote_address': '0.0.0.0'})
+
+    def test_getPropertiesForUser(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+        req = DummyRequest()
+        session = req.SESSION
+        user = DummyUser('testuser')
+
+        # Empty session
+        self.assertEqual(plugin.getPropertiesForUser(user, req), {})
+
+        # session data exists, but not for the user in question
+        session.set(plugin._uid, {plugin.login_attribute: 'someoneelse'})
+        self.assertEqual(plugin.getPropertiesForUser(user, req), {})
+
+        # Correct session data
+        session.set(plugin._uid,
+                    {plugin.login_attribute: 'testuser',
+                     'someproperty': 'foo'})
+        self.assertEqual(plugin.getPropertiesForUser(user, req),
+                         {plugin.login_attribute: 'testuser',
+                          'someproperty': 'foo'})
