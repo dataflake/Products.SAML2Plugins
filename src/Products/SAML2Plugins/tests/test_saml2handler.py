@@ -17,10 +17,10 @@ from saml2.cache import Cache
 from saml2.client import Saml2Client
 
 from .base import TEST_CONFIG_FOLDER
-from .base import PluginTestBase
+from .base import PluginTestCase
 
 
-class SAML2HandlerTests(PluginTestBase):
+class SAML2HandlerTests(PluginTestCase):
 
     def _getTargetClass(self):
         from ..PluginBase import SAML2PluginBase

@@ -25,7 +25,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 TEST_CONFIG_FOLDER = os.path.join(here, 'test_data')
 
 
-class PluginTestBase(unittest.TestCase):
+class PluginTestCase(unittest.TestCase):
 
     def setUp(self):
         super().setUp()

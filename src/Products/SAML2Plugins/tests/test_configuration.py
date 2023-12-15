@@ -18,10 +18,10 @@ import os
 from ..configuration import getConfigurationDict
 from ..configuration import setConfigurationDict
 from .base import TEST_CONFIG_FOLDER
-from .base import PluginTestBase
+from .base import PluginTestCase
 
 
-class PySAML2ConfigurationTests(PluginTestBase):
+class PySAML2ConfigurationTests(PluginTestCase):
 
     def _getTargetClass(self):
         from ..PluginBase import SAML2PluginBase

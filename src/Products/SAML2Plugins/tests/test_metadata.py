@@ -14,10 +14,10 @@
 """
 
 from .base import TEST_CONFIG_FOLDER
-from .base import PluginTestBase
+from .base import PluginTestCase
 
 
-class SAML2MetadataTests(PluginTestBase):
+class SAML2MetadataTests(PluginTestCase):
     # Metadata generation is handled by PySAML2 itself, so there's
     # not much that makes sense to test.
 

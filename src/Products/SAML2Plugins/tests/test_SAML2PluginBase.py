@@ -16,10 +16,10 @@
 from ..configuration import getConfigurationDict
 from .base import TEST_CONFIG_FOLDER
 from .base import InterfaceTestMixin
-from .base import PluginTestBase
+from .base import PluginTestCase
 
 
-class SAML2PluginBaseTests(PluginTestBase, InterfaceTestMixin):
+class SAML2PluginBaseTests(PluginTestCase, InterfaceTestMixin):
 
     def _getTargetClass(self):
         from ..PluginBase import SAML2PluginBase

@@ -17,10 +17,10 @@ from Testing.makerequest import makerequest
 
 from ...SAML2Plugin import SAML2Plugin
 from ...tests.base import TEST_CONFIG_FOLDER
-from ...tests.base import PluginTestBase
+from ...tests.base import PluginTestCase
 
 
-class PluginViewsTestBase(PluginTestBase):
+class PluginViewsTestBase(PluginTestCase):
 
     def _makeOne(self):
         plugin = makerequest(SAML2Plugin('test'))
