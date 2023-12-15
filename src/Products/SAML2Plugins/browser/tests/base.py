@@ -14,7 +14,6 @@
 """
 
 from ...SAML2Plugin import SAML2Plugin
-from ...tests.base import TEST_CONFIG_FOLDER
 from ...tests.base import PluginTestCase
 from ...tests.dummy import DummyRequest
 
