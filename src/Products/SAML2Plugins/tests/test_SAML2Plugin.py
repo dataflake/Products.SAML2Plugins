@@ -17,10 +17,13 @@ from Testing.ZopeTestCase import ZopeTestCase
 
 from .base import InterfaceTestMixin
 from .base import PluginTestCase
+from .base import SAML2PluginBaseTests
 from .dummy import DummyRequest
 
 
-class SAML2PluginBaseTests(PluginTestCase, InterfaceTestMixin):
+class SAML2PluginTests(PluginTestCase,
+                       InterfaceTestMixin,
+                       SAML2PluginBaseTests):
 
     def _getTargetClass(self):
         from ..SAML2Plugin import SAML2Plugin

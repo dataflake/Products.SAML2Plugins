@@ -18,6 +18,7 @@ import subprocess
 import unittest
 
 from ..configuration import clearAllCaches
+from ..configuration import getConfigurationDict
 from ..configuration import setConfigurationDict
 
 
@@ -81,3 +82,30 @@ class InterfaceTestMixin:
         verifyClass(ICredentialsResetPlugin, self._getTargetClass())
         verifyClass(IExtractionPlugin, self._getTargetClass())
         verifyClass(IPropertiesPlugin, self._getTargetClass())
+
+
+class SAML2PluginBaseTests:
+
+    def test_instantiation_defaults(self):
+        plugin = self._makeOne('test1')
+        self.assertEqual(plugin.getId(), 'test1')
+        self.assertEqual(plugin.title, '')
+        self.assertEqual(plugin.login_attribute, 'login')
+        self.assertEqual(plugin.metadata_valid, 2)
+        self.assertFalse(plugin.metadata_sign)
+        self.assertFalse(plugin.metadata_envelope)
+        self.assertIn('etc', plugin.getConfigurationFolderPath())
+        self.assertIsNone(getConfigurationDict(plugin._uid))
+        self.assertIsInstance(plugin._uid, str)
+        self.assertTrue(plugin._uid)
+
+    def test_instantiation(self):
+        plugin = self._makeOne('test1', title='This is a test',
+                               configuration_folder=TEST_CONFIG_FOLDER)
+        self.assertEqual(plugin.getId(), 'test1')
+        self.assertEqual(plugin.title, 'This is a test')
+        self.assertEqual(plugin.getConfigurationFolderPath(),
+                         TEST_CONFIG_FOLDER)
+        self.assertIsNone(getConfigurationDict(plugin._uid))
+        self.assertIsInstance(plugin._uid, str)
+        self.assertTrue(plugin._uid)
