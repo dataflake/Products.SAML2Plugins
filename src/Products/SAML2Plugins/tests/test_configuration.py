@@ -40,7 +40,9 @@ class PySAML2ConfigurationTests(PluginTestBase):
         plugin = self._makeOne('test1')
 
         # No configuration folder is set
-        self.assertIsNone(plugin.getConfigurationFilePath())
+        self.assertIn(f'saml2_cfg_{plugin._uid}.py',
+                      plugin.getConfigurationFilePath())
+        self.assertNotIn(TEST_CONFIG_FOLDER, plugin.getConfigurationFilePath())
 
         # Set a configuration folder path
         plugin._configuration_folder = TEST_CONFIG_FOLDER
@@ -70,11 +72,10 @@ class PySAML2ConfigurationTests(PluginTestBase):
     def test_getConfiguration(self):
         plugin = self._makeOne('test1')
 
-        # No configuration folder path is set
+        # No valid configuration folder path is set
         with self.assertRaises(ValueError) as context:
             plugin.getConfiguration('service')
-        self.assertEqual(str(context.exception),
-                         'No configuration folder path set')
+        self.assertIn('Missing configuration file', str(context.exception))
         self.assertIsNone(getConfigurationDict(plugin._uid))
 
         # Set a configuration path but the file isn't there
@@ -116,7 +117,7 @@ class PySAML2ConfigurationTests(PluginTestBase):
         plugin = self._makeOne('test1')
 
         # No configuration folder path is set
-        self.assertIn('No configuration folder path set',
+        self.assertIn('Missing configuration file',
                       plugin.getConfigurationZMIRepresentation())
 
         # Set a configuration path but the file isn't there

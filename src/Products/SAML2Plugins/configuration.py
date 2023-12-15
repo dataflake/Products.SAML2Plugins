@@ -25,6 +25,7 @@ from saml2.config import Config
 from AccessControl import ClassSecurityInfo
 from AccessControl.class_init import InitializeClass
 from AccessControl.Permissions import manage_users
+from App.config import getConfiguration
 
 
 CONFIGS = {}
@@ -106,8 +107,23 @@ class PySAML2ConfigurationSupport:
         """ Get the configuration folder path.
 
         This path is configured globally for each Zope instance in the Zope
-        instance configuration file, normally named ``zope.conf``.
+        instance configuration file, normally named ``zope.conf``. If it is
+        not set, the ``etc`` folder inside the Zope instance home folder is
+        used as default.
+
+        Returns:
+            A filesystem folder path
         """
+        if self._configuration_folder is None:
+            # The configuration folder can be set in a zope.conf
+            # `product-config` section
+            zope_config = getConfiguration()
+            default_folder = os.path.join(zope_config.instancehome, 'etc')
+
+            product_config = getattr(zope_config, 'product_config', dict())
+            my_config = product_config.get('saml2plugins', dict())
+            self._configuration_folder = my_config.get('configuration_folder',
+                                                       default_folder)
         return self._configuration_folder
 
     @security.protected(manage_users)

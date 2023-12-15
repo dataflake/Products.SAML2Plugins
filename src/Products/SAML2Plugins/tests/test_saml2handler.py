@@ -48,14 +48,15 @@ class SAML2HandlerTests(PluginTestBase):
         # will return it from cache, so the objects should be identical
         self.assertTrue(saml2_client is plugin.getPySAML2Client())
 
-    def test_handleSAML2Auth(self):
+    def test_handleSAML2Response(self):
         plugin = self._makeOne()
 
         # Empty SAML response
-        # XXX self.assertEqual(plugin.handleSAML2Auth(''), {})
+        self.assertEqual(plugin.handleSAML2Response(''), {})
 
-        # SAML response from https://mocksaml.com
-        # XXX with open(self._test_path('samlresponse1.txt'), 'r') as fp:
-        # XXX     saml_response = fp.read()
-        # XXX result = plugin.handleSAML2Auth(saml_response, binding='POST')
-        # XXX self.assertIn('jenstest@example.com', str(result))
+        ## SAML response from https://mocksaml.com
+        #with open(self._test_path('samlresponse1.txt'), 'r') as fp:
+        #    saml_response = fp.read()
+        #result = plugin.handleSAML2Response(saml_response,
+        #                                    binding='POST')
+        #self.assertIn('jenstest@example.com', str(result))

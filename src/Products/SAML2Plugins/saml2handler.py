@@ -49,10 +49,49 @@ class SAML2Handler:
         return self._v_saml2client
 
     @security.private
-    def handleSAML2Auth(self, saml_response, relay_state='', binding='POST'):
+    def isLoggedIn(self, name_id_instance):
+        """ Get user info from the PySAML2 cache
+
+        Args:
+            name_id_instance (saml2.saml.NameID): The NameID instance
+                corresponding to the user
+
+        Returns:
+            A mapping with user
+        """
+        client = self.getPySAML2Client()
+        return client.users.is_logged_in(name_id_instance)
+
+    @security.private
+    def logoutLocally(self, name_id_instance):
+        """ Remove a user from the PySAML2 cache
+
+        Args:
+            name_id_instance (saml2.saml.NameID): The NameID instance
+                corresponding to the user
+        """
+        client = self.getPySAML2Client()
+        client.local_logout(name_id_instance)
+
+    @security.private
+    def getAuthenticationRedirect(self):
+        """ Prepare a SAML 2.0 authentication request
+
+        Returns:
+            A URL with query string for HTTP-Redirect
+        """
+        client = self.getPySAML2Client()
+        req_id, info = client.prepare_for_authenticate()
+        headers = dict(info['headers'])
+        return headers['Location']
+
+    @security.private
+    def handleSAML2Response(self, saml_response, relay_state='',
+                            binding='POST'):
         """ Handle an incoming SAML 2.0 authentication response """
-        session_info = {}
+        user_info = {}
         saml2_client = self.getPySAML2Client()
+
         if binding == 'POST':
             saml_binding = BINDING_HTTP_POST
         else:
@@ -60,11 +99,22 @@ class SAML2Handler:
 
         saml_resp = saml2_client.parse_authn_request_response(
                         saml_response, saml_binding)
-        if saml_resp is not None:
-            session_info = saml_resp.session_info()
-            print(session_info)
 
-        return 'Success'
+        if saml_resp is not None:
+            # Available data:
+            # saml_resp.get_identity(): map of user attributes
+            # saml_resp.get_subject(): NameID instance for user id
+            # saml_resp.ava: contains result of saml_resp.get_identity()
+            # saml_resp.session_info(): user attributes plus session info
+            user_info['name_id'] = saml_resp.get_subject()
+            user_info['issuer'] = saml_resp.issuer()
+
+            for key, value in saml_resp.get_identity():
+                if isinstance(value, (list, tuple)):
+                    value = value[0]
+                user_info[key] = value
+
+        return user_info
 
 
 InitializeClass(SAML2Handler)

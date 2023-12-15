@@ -17,7 +17,7 @@ from Products.Five import BrowserView
 
 
 class SAML2ServiceProviderView(BrowserView):
-    """ Metadata browser view """
+    """ Service Provider browser view """
 
     def __call__(self):
         """ Interact with request from the SAML 2.0 Identity Provider (IdP) """
@@ -35,6 +35,11 @@ class SAML2ServiceProviderView(BrowserView):
             # see https://en.wikipedia.org/wiki/SAML_2.0#HTTP_Redirect_Binding
             binding = 'REDIRECT'
 
-        return self.context.handleSAML2Auth(saml_response,
-                                            saml_relay_state,
-                                            binding)
+        user_info = self.context.handleSAML2Response(saml_response,
+                                                     saml_relay_state,
+                                                     binding)
+        if user_info:
+            self.request.SESSION.set(self.context._uid, user_info)
+            return 'Success'
+
+        return 'Failure'

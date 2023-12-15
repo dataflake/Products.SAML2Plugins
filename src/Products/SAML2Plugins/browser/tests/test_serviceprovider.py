@@ -25,12 +25,12 @@ class SAML2ServiceProviderViewTests(PluginViewsTestBase):
     def test___call__(self):
         view = self._makeOne()
 
-        # XXX # The request doesn't carry any SAML data yet
-        # XXX self.assertEqual(view(), {})
+        # The request doesn't carry any SAML data yet
+        self.assertEqual(view(), 'Failure')
 
-        # XXX # SAML response from https://mocksaml.com
-        # XXX with open(self._test_path('samlresponse1.txt'), 'r') as fp:
-        # XXX     view.request['SAMLResponse'] = fp.read()
-        # XXX view.request['RelayState'] = 'http://foo'
-        # XXX view.request.method = 'POST'
-        # XXX self.assertIn('jenstest@example.com', str(view()))
+        ## SAML response from https://mocksaml.com
+        #with open(self._test_path('samlresponse1.txt'), 'r') as fp:
+        #    view.request['SAMLResponse'] = fp.read()
+        #view.request['RelayState'] = 'http://foo'
+        #view.request.method = 'POST'
+        #self.assertIn('jenstest@example.com', str(view()))
