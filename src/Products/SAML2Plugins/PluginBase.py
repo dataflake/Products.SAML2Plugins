@@ -52,6 +52,7 @@ class SAML2PluginBase(BasePlugin,
     metadata_valid = 2
     metadata_sign = False
     metadata_envelope = False
+    protocol = 'http'  # The PAS challenge 'protocol' we use.
 
     security.declareProtected(manage_users, 'manage_configuration')
     manage_configuration = PageTemplateFile(

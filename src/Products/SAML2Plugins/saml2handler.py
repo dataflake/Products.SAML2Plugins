@@ -90,7 +90,7 @@ class SAML2Handler:
         return headers['Location']
 
     @security.private
-    def handleACSRequest(self, saml_response, relay_state='', binding='POST'):
+    def handleACSRequest(self, saml_response, binding='POST'):
         """ Handle incoming SAML 2.0 assertions """
         user_info = {}
         saml2_client = self.getPySAML2Client()
@@ -109,7 +109,7 @@ class SAML2Handler:
             # saml_resp.get_subject(): NameID instance for user id
             # saml_resp.ava: contains result of saml_resp.get_identity()
             # saml_resp.session_info(): user attributes plus session info
-            user_info['name_id'] = saml_resp.get_subject()
+            user_info['name_id'] = str(saml_resp.get_subject())
             user_info['issuer'] = saml_resp.issuer()
 
             for key, value in saml_resp.get_identity().items():

@@ -13,6 +13,9 @@
 """ Browser view for the plugin Service Provider (SP) functionality
 """
 
+from urllib.parse import urlparse
+from urllib.parse import urlunparse
+
 from Products.Five import BrowserView
 
 
@@ -22,17 +25,23 @@ class SAML2ServiceProviderView(BrowserView):
     def __call__(self):
         """ Interact with request from the SAML 2.0 Identity Provider (IdP) """
         saml_response = self.request.get('SAMLResponse', '')
-        saml_relay_state = self.request.get('RelayState', '')
+        target_url = self.request.get('RelayState', '/')
         binding = 'REDIRECT'
+
+        # Make sure the login target url lands here by ripping off
+        # protocol and host information. Prevents an open redirect.
+        if target_url:
+            parsed_url = urlparse(target_url)
+            target_url = urlunparse(('', '') + parsed_url[2:])
 
         if self.request.method == 'POST':
             binding = 'POST'
 
-        user_info = self.context.handleACSRequest(saml_response,
-                                                  saml_relay_state,
-                                                  binding)
+        user_info = self.context.handleACSRequest(saml_response, binding)
         if user_info:
             self.request.SESSION.set(self.context._uid, user_info)
+            self.request.response.redirect(target_url, lock=1) 
+
             return 'Success'
 
         return 'Failure'
