@@ -53,10 +53,10 @@ class SAML2HandlerTests(PluginTestCase):
         with self.assertRaises(KeyError):
             plugin.logoutLocally(name_id)
 
-    def test_handleSAML2Response(self):
+    def test_handleACSRequest(self):
         plugin = self._makeOne()
 
         # Empty SAML response
-        self.assertEqual(plugin.handleSAML2Response(''), {})
+        self.assertEqual(plugin.handleACSRequest(''), {})
 
         # XXX There should be more tests here

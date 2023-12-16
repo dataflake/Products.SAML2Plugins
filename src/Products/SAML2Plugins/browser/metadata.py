@@ -20,5 +20,5 @@ class SAML2MetadataView(BrowserView):
     """ Metadata browser view """
 
     def __call__(self):
-        self.request.response.setHeader('Content-Type', 'text/xml')
+        self.request.response.setHeader('Content-Type', 'application/xml')
         return self.context.generateMetadata()

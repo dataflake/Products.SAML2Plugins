@@ -36,7 +36,7 @@ class SAML2ServiceProviderViewTests(PluginViewsTestBase):
 
         # Mocking out a successful SAML interaction result
         user_info = {'foo': 'bar'}
-        view.context.handleSAML2Response = MagicMock(return_value=user_info)
+        view.context.handleACSRequest = MagicMock(return_value=user_info)
         self.assertEqual(view(), 'Success')
         self.assertEqual(req.SESSION[plugin._uid], user_info)
 
@@ -52,6 +52,6 @@ class SAML2ServiceProviderViewTests(PluginViewsTestBase):
 
         # Mocking out a successful SAML interaction result
         user_info = {'foo': 'bar'}
-        view.context.handleSAML2Response = MagicMock(return_value=user_info)
+        view.context.handleACSRequest = MagicMock(return_value=user_info)
         self.assertEqual(view(), 'Success')
         self.assertEqual(req.SESSION[plugin._uid], user_info)

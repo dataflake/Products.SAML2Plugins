@@ -13,6 +13,8 @@
 """ SAML interaction handler for SAML 2.0 protocol requests
 """
 
+import logging
+
 from saml2 import BINDING_HTTP_POST
 from saml2 import BINDING_HTTP_REDIRECT
 from saml2.cache import Cache
@@ -22,6 +24,7 @@ from AccessControl import ClassSecurityInfo
 from AccessControl.class_init import InitializeClass
 
 
+logger = logging.getLogger('Products.SAML2Plugins')
 CACHES = {}
 
 
@@ -86,9 +89,8 @@ class SAML2Handler:
         return headers['Location']
 
     @security.private
-    def handleSAML2Response(self, saml_response, relay_state='',
-                            binding='POST'):
-        """ Handle an incoming SAML 2.0 authentication response """
+    def handleACSRequest(self, saml_response, relay_state='', binding='POST'):
+        """ Handle incoming SAML 2.0 assertions """
         user_info = {}
         saml2_client = self.getPySAML2Client()
 
@@ -113,6 +115,17 @@ class SAML2Handler:
                 if isinstance(value, (list, tuple)):
                     value = value[0]
                 user_info[key] = value
+
+                # For convenience store login under a fixed key
+                if key == self.login_attribute:
+                    user_info['_login'] = value
+
+            if not user_info.get('_login'):
+                user_info['_login'] = f'({self.login_attribute} not in data)'
+            logger.debug(
+                f'handleACSRequest: Got data for {user_info["_login"]}')
+        else:
+            logger.debug('handleACSRequest: Invalid SamlResponse, no user')
 
         return user_info
 

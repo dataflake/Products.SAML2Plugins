@@ -200,6 +200,7 @@ class SAML2PluginBaseTests:
 
         # Add some session data
         req.set('REMOTE_ADDR', '0.0.0.0')
+        req.set('REMOTE_HOST', 'somehost')
         session[plugin._uid] = {'name_id': DummyNameId('foo'),
                                 plugin.login_attribute: 'testuser1',
                                 'issuer': 'https://samltest'}
@@ -215,7 +216,7 @@ class SAML2PluginBaseTests:
                          {'plugin_uid': plugin._uid,
                           'login': 'testuser1',
                           'password': '',
-                          'remote_host': 'https://samltest',
+                          'remote_host': 'somehost',
                           'remote_address': '0.0.0.0'})
 
     def test_getPropertiesForUser(self):

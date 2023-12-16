@@ -14,6 +14,7 @@
 """
 
 import copy
+import logging
 import uuid
 from urllib.parse import quote
 
@@ -35,6 +36,9 @@ from Products.PluggableAuthService.utils import classImplements
 from .configuration import PySAML2ConfigurationSupport
 from .metadata import SAML2MetadataProvider
 from .saml2handler import SAML2Handler
+
+
+logger = logging.getLogger('Products.SAML2Plugins')
 
 
 class SAML2PluginBase(BasePlugin,
@@ -113,10 +117,13 @@ class SAML2PluginBase(BasePlugin,
 
         if credentials.get('login', None) is None:
             # User is not logged in or login expired
+            logger.debug('authenticateCredentials: No login session active')
             return None
 
         # The credentials were already checked for expiration in the preceding
         # extractCredentials step so we accept it immediately.
+        logger.debug(
+            f'authenticateCredentials: Autenticated {credentials["login"]}')
         return (credentials['login'], credentials['login'])
 
     #
@@ -137,6 +144,7 @@ class SAML2PluginBase(BasePlugin,
                 came_from_url = f'{came_from_url}?{qs}'
             url = f'{url}&RelayState={quote(came_from_url)}'
 
+        logger.debug('challenge: Redirecting for SAML 2 login')
         response.redirect(url, lock=1)
 
         return True
@@ -157,7 +165,11 @@ class SAML2PluginBase(BasePlugin,
         """
         session_info = request.SESSION.get(self._uid, None)
         if session_info and self.isLoggedIn(session_info['name_id']):
+            login = session_info.get('_login', 'n/a')
+            logger.debug(f'resetCredentials: Logging out {login}')
             self.logoutLocally(session_info['name_id'])
+        else:
+            logger.debug('resetCredentials: No login session active')
         request.SESSION.set(self._uid, {})
 
     #
@@ -183,8 +195,11 @@ class SAML2PluginBase(BasePlugin,
         if session_info and self.isLoggedIn(session_info['name_id']):
             creds['login'] = session_info[self.login_attribute]
             creds['password'] = ''
-            creds['remote_host'] = session_info['issuer']
+            creds['remote_host'] = request.get('REMOTE_HOST', '')
             creds['remote_address'] = request.get('REMOTE_ADDR', '')
+            logger.debug(f'extractCredentials: Extracted {creds["login"]}')
+        else:
+            logger.debug('extractCredentials: No login session active')
 
         return creds
 
@@ -201,7 +216,11 @@ class SAML2PluginBase(BasePlugin,
         session_info = request.SESSION.get(self._uid, None)
 
         if session_info and user.getId() == session_info[self.login_attribute]:
+            login = session_info.get('_login', 'n/a')
             properties = copy.deepcopy(session_info)
+            logger.debug(f'getPropertiesForUser: Found data for {login}')
+        else:
+            logger.debug('getPropertiesForUser: No login session active')
 
         return properties
 
