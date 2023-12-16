@@ -164,7 +164,7 @@ class SAML2PluginBase(BasePlugin,
             response (Zope response): The response instance from the request
         """
         session_info = request.SESSION.get(self._uid, None)
-        if session_info and self.isLoggedIn(session_info['name_id']):
+        if session_info:
             login = session_info.get('_login', 'n/a')
             logger.debug(f'resetCredentials: Logging out {login}')
             self.logoutLocally(session_info['name_id'])
@@ -192,7 +192,7 @@ class SAML2PluginBase(BasePlugin,
         """
         creds = {'plugin_uid': self._uid}
         session_info = request.SESSION.get(self._uid, None)
-        if session_info and self.isLoggedIn(session_info['name_id']):
+        if session_info:
             creds['login'] = session_info[self.login_attribute]
             creds['password'] = ''
             creds['remote_host'] = request.get('REMOTE_HOST', '')

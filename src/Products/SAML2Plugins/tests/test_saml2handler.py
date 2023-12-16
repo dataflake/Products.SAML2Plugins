@@ -13,11 +13,14 @@
 """ Tests for the SAML 2.0 handler
 """
 
+from unittest.mock import MagicMock
+
 from saml2.cache import Cache
 from saml2.client import Saml2Client
 
 from .base import PluginTestCase
 from .dummy import DummyNameId
+from .dummy import DummyPySAML2Client
 
 
 class SAML2HandlerTests(PluginTestCase):
@@ -45,13 +48,31 @@ class SAML2HandlerTests(PluginTestCase):
         # will return it from cache, so the objects should be identical
         self.assertTrue(saml2_client is plugin.getPySAML2Client())
 
+    def test_isLoggedIn(self):
+        plugin = self._makeOne()
+        name_id = DummyNameId('testid')
+        dummy_client = DummyPySAML2Client()
+
+        # User is not logged in
+        self.assertFalse(plugin.isLoggedIn(name_id))
+
+        # Mock out a logged in user
+        plugin.getPySAML2Client = MagicMock(return_value=dummy_client)
+        dummy_client._store_name_id(name_id)
+        self.assertTrue(plugin.isLoggedIn(name_id))
+
     def test_logoutLocally(self):
         plugin = self._makeOne()
         name_id = DummyNameId('testid')
+        dummy_client = DummyPySAML2Client()
 
-        # This user is not logged in for PySAML2, so the call will fail
-        with self.assertRaises(KeyError):
-            plugin.logoutLocally(name_id)
+        # User is not logged in, call doesn't raise errors
+        self.assertIsNone(plugin.logoutLocally(name_id))
+
+        # Mock out a logged in user
+        plugin.getPySAML2Client = MagicMock(return_value=dummy_client)
+        dummy_client._store_name_id(name_id)
+        self.assertIsNone(plugin.logoutLocally(name_id))
 
     def test_handleACSRequest(self):
         plugin = self._makeOne()

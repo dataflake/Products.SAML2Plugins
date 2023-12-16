@@ -174,6 +174,12 @@ class SAML2PluginBaseTests:
         req = DummyRequest()
         session = req.SESSION
 
+        # No session info
+        self.assertFalse(session.get(plugin._uid))
+        plugin.resetCredentials(req, req.RESPONSE)
+        self.assertFalse(session.get(plugin._uid))
+
+        # Add session info to delete
         self.assertFalse(session.get(plugin._uid))
         session[plugin._uid] = {'name_id': DummyNameId('foo')}
         self.assertTrue(session.get(plugin._uid))
@@ -181,7 +187,6 @@ class SAML2PluginBaseTests:
         self.assertFalse(session.get(plugin._uid))
 
         # act like the user was logged in
-        plugin.isLoggedIn = MagicMock(return_value=True)
         plugin.logoutLocally = MagicMock(return_value=True)
         session[plugin._uid] = {'name_id': DummyNameId('foo')}
         self.assertTrue(session.get(plugin._uid))
@@ -204,14 +209,6 @@ class SAML2PluginBaseTests:
         session[plugin._uid] = {'name_id': DummyNameId('foo'),
                                 plugin.login_attribute: 'testuser1',
                                 'issuer': 'https://samltest'}
-
-        # The user is not logged in, no user data should be returned
-        plugin.isLoggedIn = MagicMock(return_value=False)
-        self.assertEqual(plugin.extractCredentials(req),
-                         {'plugin_uid': plugin._uid})
-
-        # User is logged in
-        plugin.isLoggedIn = MagicMock(return_value=True)
         self.assertEqual(plugin.extractCredentials(req),
                          {'plugin_uid': plugin._uid,
                           'login': 'testuser1',

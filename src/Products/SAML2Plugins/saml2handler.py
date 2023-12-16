@@ -53,14 +53,14 @@ class SAML2Handler:
 
     @security.private
     def isLoggedIn(self, name_id_instance):
-        """ Get user info from the PySAML2 cache
+        """ Is the user in the PySAML2 cache?
 
         Args:
             name_id_instance (saml2.saml.NameID): The NameID instance
                 corresponding to the user
 
         Returns:
-            A mapping with user
+            True or False
         """
         client = self.getPySAML2Client()
         return client.is_logged_in(name_id_instance)
@@ -74,7 +74,8 @@ class SAML2Handler:
                 corresponding to the user
         """
         client = self.getPySAML2Client()
-        client.local_logout(name_id_instance)
+        if client.is_logged_in(name_id_instance):
+            client.local_logout(name_id_instance)
 
     @security.private
     def getAuthenticationRedirect(self):

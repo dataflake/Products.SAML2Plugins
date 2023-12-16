@@ -67,3 +67,18 @@ class DummyNameId:
         self.format = 'format_value'
         self.sp_provided_id = 'sp_provided_id_value'
         self.text = name
+
+
+class DummyPySAML2Client:
+
+    def __init__(self):
+        self.users = {}
+
+    def _store_name_id(self, name_id):
+        self.users[str(name_id)] = True
+
+    def is_logged_in(self, name_id):
+        return bool(self.users.get(str(name_id)))
+
+    def local_logout(self, name_id):
+        del self.users[str(name_id)]
