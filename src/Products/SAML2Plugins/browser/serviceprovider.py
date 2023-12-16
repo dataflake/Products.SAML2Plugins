@@ -13,10 +13,14 @@
 """ Browser view for the plugin Service Provider (SP) functionality
 """
 
+import logging
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
 from Products.Five import BrowserView
+
+
+logger = logging.getLogger('Products.SAML2Plugins')
 
 
 class SAML2ServiceProviderView(BrowserView):
@@ -39,8 +43,9 @@ class SAML2ServiceProviderView(BrowserView):
 
         user_info = self.context.handleACSRequest(saml_response, binding)
         if user_info:
+            logger.debug(f'SP view: Success, redirecting to {target_url}')
             self.request.SESSION.set(self.context._uid, user_info)
-            self.request.response.redirect(target_url, lock=1) 
+            self.request.response.redirect(target_url, lock=1)
 
             return 'Success'
 
