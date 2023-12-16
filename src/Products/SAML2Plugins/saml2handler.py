@@ -112,7 +112,7 @@ class SAML2Handler:
             user_info['name_id'] = saml_resp.get_subject()
             user_info['issuer'] = saml_resp.issuer()
 
-            for key, value in saml_resp.get_identity():
+            for key, value in saml_resp.get_identity().items():
                 if isinstance(value, (list, tuple)):
                     value = value[0]
                 user_info[key] = value
