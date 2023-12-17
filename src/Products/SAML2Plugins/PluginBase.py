@@ -30,6 +30,7 @@ from Products.PluggableAuthService.interfaces.plugins import \
     ICredentialsResetPlugin
 from Products.PluggableAuthService.interfaces.plugins import IExtractionPlugin
 from Products.PluggableAuthService.interfaces.plugins import IPropertiesPlugin
+from Products.PluggableAuthService.interfaces.plugins import IRolesPlugin
 from Products.PluggableAuthService.plugins.BasePlugin import BasePlugin
 from Products.PluggableAuthService.utils import classImplements
 
@@ -49,6 +50,7 @@ class SAML2PluginBase(BasePlugin,
 
     security = ClassSecurityInfo()
     login_attribute = 'login'
+    assign_roles = []
     metadata_valid = 2
     metadata_sign = False
     metadata_envelope = False
@@ -74,6 +76,11 @@ class SAML2PluginBase(BasePlugin,
                      'label': 'Login attribute (required)',
                      'type': 'string',
                      'mode': 'w'},
+                    {'id': 'assign_roles',
+                     'label': 'Roles for SAML-authenticated users',
+                     'type': 'multiple selection',
+                     'select_variable': 'getCandidateRoles',
+                     'mode': 'w'},
                     {'id': 'metadata_valid',
                      'label': 'Metadata validity (hours)',
                      'type': 'int',
@@ -97,6 +104,24 @@ class SAML2PluginBase(BasePlugin,
         # Set a unique UID as key for the configuration file
         # so that each plugin in the ZODB can have a unique configuration
         self._uid = f'{id}_{str(uuid.uuid4())}'
+
+    #
+    #   ZMI helpers
+    #
+    @security.protected(manage_users)
+    def getCandidateRoles(self):
+        """ Get roles that can be assigned to users
+
+        Filters out special role names that should not be assigned.
+
+        Returns:
+            A tuple of role names
+        """
+        roles = sorted(self.valid_roles())
+        for special_role in ('Anonymous', 'Authenticated', 'Owner'):
+            if special_role in roles:
+                roles.remove(special_role)
+        return tuple(roles)
 
     #
     #   IAuthenticationPlugin implementation
@@ -181,8 +206,7 @@ class SAML2PluginBase(BasePlugin,
         """ See IExtractionPlugin.
 
         Extract credentials from 'request'. This is using user data in the Zope
-        session and checks back with the SAML library to make sure the user is
-        not expired.
+        session.
 
         Args:
             request (Zope request): The incoming Zope request instance
@@ -225,6 +249,28 @@ class SAML2PluginBase(BasePlugin,
 
         return properties
 
+    #
+    # IRolesPlugin implementation
+    #
+    @security.private
+    def getRolesForPrincipal(self, principal, request=None):
+        """ See IRoles.
+
+        Get roles for the principal (a group or a user).
+        """
+        roles = []
+        session_info = request.SESSION.get(self._uid, None)
+
+        if session_info and \
+           principal.getId() == session_info[self.login_attribute]:
+            roles = self.assign_roles
+            logger.debug('getRolesForPrincipal: Found roles for '
+                         f'{principal.getId()}')
+        else:
+            logger.debug('getRolesForPrincipal: No login session active')
+
+        return tuple(sorted(roles))
+
 
 InitializeClass(SAML2PluginBase)
 
@@ -234,4 +280,5 @@ classImplements(SAML2PluginBase,
                 ICredentialsResetPlugin,
                 IExtractionPlugin,
                 IPropertiesPlugin,
+                IRolesPlugin,
                 )

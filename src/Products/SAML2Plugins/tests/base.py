@@ -83,12 +83,15 @@ class InterfaceTestMixin:
             IExtractionPlugin
         from Products.PluggableAuthService.interfaces.plugins import \
             IPropertiesPlugin
+        from Products.PluggableAuthService.interfaces.plugins import \
+            IRolesPlugin
 
         verifyClass(IAuthenticationPlugin, self._getTargetClass())
         verifyClass(IChallengePlugin, self._getTargetClass())
         verifyClass(ICredentialsResetPlugin, self._getTargetClass())
         verifyClass(IExtractionPlugin, self._getTargetClass())
         verifyClass(IPropertiesPlugin, self._getTargetClass())
+        verifyClass(IRolesPlugin, self._getTargetClass())
 
 
 class SAML2PluginBaseTests:
@@ -237,3 +240,48 @@ class SAML2PluginBaseTests:
         self.assertEqual(plugin.getPropertiesForUser(user, req),
                          {plugin.login_attribute: 'testuser',
                           'someproperty': 'foo'})
+
+    def test_getCandidateRoles(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+
+        # No known roles
+        plugin.valid_roles = MagicMock(return_value=())
+        self.assertEqual(plugin.getCandidateRoles(), ())
+
+        # The standard set of roles in Zope
+        roles = ('Anonymous', 'Authenticated', 'Manager', 'Owner')
+        plugin.valid_roles = MagicMock(return_value=roles)
+        self.assertEqual(plugin.getCandidateRoles(), ('Manager',))
+
+        # Add some custom roles
+        roles = ('Anonymous', 'Authenticated', 'Manager', 'Owner',
+                 'arole', 'test2', 'foorole')
+        plugin.valid_roles = MagicMock(return_value=roles)
+        self.assertEqual(plugin.getCandidateRoles(),
+                         ('Manager', 'arole', 'foorole', 'test2'))
+
+    def test_getRolesForPrincipal(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+        req = DummyRequest()
+        session = req.SESSION
+        user = DummyUser('testuser')
+
+        # Empty session
+        self.assertEqual(plugin.getRolesForPrincipal(user, req), ())
+
+        # session data exists, but not for the user in question
+        session.set(plugin._uid, {plugin.login_attribute: 'someoneelse'})
+        self.assertEqual(plugin.getRolesForPrincipal(user, req), ())
+
+        # Correct session data
+        session.set(plugin._uid, {plugin.login_attribute: 'testuser'})
+
+        # There are no roles to assign set on the plugin yet
+        self.assertEqual(plugin.getRolesForPrincipal(user, req), ())
+
+        # Set roles to assign
+        plugin.assign_roles = ['role1', 'role2']
+        self.assertEqual(plugin.getRolesForPrincipal(user, req),
+                         ('role1', 'role2'))
