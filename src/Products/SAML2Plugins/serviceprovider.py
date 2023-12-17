@@ -10,7 +10,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-""" SAML interaction handler for SAML 2.0 protocol requests
+""" SAML 2.0 service provider handler
 """
 
 import logging

@@ -10,7 +10,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-""" Browser view for the plugin Service Provider (SP) functionality
+""" Browser view for the SAML 2.0 assertion consumer functionality
 """
 
 import logging

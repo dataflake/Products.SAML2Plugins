@@ -10,7 +10,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-""" Tests for the SAML 2.0 handler
+""" Tests for the SAML 2.0 service provider
 """
 
 from unittest.mock import MagicMock
