@@ -10,7 +10,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-""" Tests for SAML 2.0 service provider view
+""" Tests for SAML 2.0 assertion consumer view
 """
 
 from unittest.mock import MagicMock
@@ -18,11 +18,11 @@ from unittest.mock import MagicMock
 from .base import PluginViewsTestBase
 
 
-class SAML2ServiceProviderViewTests(PluginViewsTestBase):
+class SAML2AssertionConsumerViewTests(PluginViewsTestBase):
 
     def _getTargetClass(self):
-        from ..serviceprovider import SAML2ServiceProviderView
-        return SAML2ServiceProviderView
+        from ..assertionconsumer import SAML2AssertionConsumerView
+        return SAML2AssertionConsumerView
 
     def _call_test(self, request_method):
         view = self._makeOne()

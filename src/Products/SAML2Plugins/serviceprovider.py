@@ -28,7 +28,7 @@ logger = logging.getLogger('Products.SAML2Plugins')
 CACHES = {}
 
 
-class SAML2Handler:
+class SAML2ServiceProvider:
 
     security = ClassSecurityInfo()
     _v_saml2client = None
@@ -131,4 +131,4 @@ class SAML2Handler:
         return user_info
 
 
-InitializeClass(SAML2Handler)
+InitializeClass(SAML2ServiceProvider)

@@ -11,8 +11,8 @@
 
   <browser:page
     for="Products.SAML2Plugins.interfaces.ISAML2Plugin"
-    name="sp"
-    class=".serviceprovider.SAML2ServiceProviderView"
+    name="acs"
+    class=".acs.SAML2AssertionConsumerView"
     permission="zope.Public"
     />
 

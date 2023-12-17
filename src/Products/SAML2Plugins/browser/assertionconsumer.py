@@ -23,7 +23,7 @@ from Products.Five import BrowserView
 logger = logging.getLogger('Products.SAML2Plugins')
 
 
-class SAML2ServiceProviderView(BrowserView):
+class SAML2AssertionConsumerView(BrowserView):
     """ Service Provider browser view """
 
     def __call__(self):

@@ -23,7 +23,7 @@ from .dummy import DummyNameId
 from .dummy import DummyPySAML2Client
 
 
-class SAML2HandlerTests(PluginTestCase):
+class SAML2ServiceProviderTests(PluginTestCase):
 
     def _getTargetClass(self):
         from ..PluginBase import SAML2PluginBase

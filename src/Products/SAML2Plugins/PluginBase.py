@@ -36,7 +36,7 @@ from Products.PluggableAuthService.utils import classImplements
 
 from .configuration import PySAML2ConfigurationSupport
 from .metadata import SAML2MetadataProvider
-from .saml2handler import SAML2Handler
+from .serviceprovider import SAML2ServiceProvider
 
 
 logger = logging.getLogger('Products.SAML2Plugins')
@@ -45,7 +45,7 @@ logger = logging.getLogger('Products.SAML2Plugins')
 class SAML2PluginBase(BasePlugin,
                       PySAML2ConfigurationSupport,
                       SAML2MetadataProvider,
-                      SAML2Handler):
+                      SAML2ServiceProvider):
     """ SAML 2.0 base plugin class """
 
     security = ClassSecurityInfo()
