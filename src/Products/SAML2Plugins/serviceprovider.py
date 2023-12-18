@@ -78,7 +78,7 @@ class SAML2ServiceProvider:
             client.local_logout(name_id_instance)
 
     @security.private
-    def getAuthenticationRedirect(self):
+    def getIdPAuthenticationURL(self):
         """ Prepare a SAML 2.0 authentication request
 
         Returns:

@@ -123,6 +123,31 @@ class SAML2PluginBase(BasePlugin,
                 roles.remove(special_role)
         return tuple(roles)
 
+    @security.public
+    def getLoginURL(self, request):
+        """ Get a fully formed URL for redirecting to the Identity Provider
+
+        Args:
+            request (Zope REQUEST object): A Zope REQUEST
+
+        Returns:
+            A string with an URL for redirecting to the Identity Provider
+        """
+        url = self.getIdPAuthenticationURL()
+
+        came_from_url = request.get('came_from')
+        if came_from_url:
+            url = f'{url}&RelayState={quote(came_from_url)}'
+        else:
+            requested_url = request.get('ACTUAL_URL')
+            if requested_url:
+                qs = request.get('QUERY_STRING')
+                if qs:
+                    requested_url = f'{requested_url}?{qs}'
+                url = f'{url}&RelayState={quote(requested_url)}'
+
+        return url
+
     #
     #   IAuthenticationPlugin implementation
     #
@@ -161,15 +186,7 @@ class SAML2PluginBase(BasePlugin,
 
         Challenge the user for credentials.
         """
-        url = self.getAuthenticationRedirect()
-
-        came_from_url = request.get('ACTUAL_URL')
-        if came_from_url:
-            qs = request.get('QUERY_STRING')
-            if qs:
-                came_from_url = f'{came_from_url}?{qs}'
-            url = f'{url}&RelayState={quote(came_from_url)}'
-
+        url = self.getLoginURL(request)
         logger.debug('challenge: Redirecting for SAML 2 login')
         response.redirect(url, lock=1)
 
