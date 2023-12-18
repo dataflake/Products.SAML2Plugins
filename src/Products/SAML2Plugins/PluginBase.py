@@ -174,7 +174,7 @@ class SAML2PluginBase(BasePlugin,
         # The credentials were already checked for expiration in the preceding
         # extractCredentials step so we accept it immediately.
         logger.debug(
-            f'authenticateCredentials: Autenticated {credentials["login"]}')
+            f'authenticateCredentials: Authenticated {credentials["login"]}')
         return (credentials['login'], credentials['login'])
 
     #

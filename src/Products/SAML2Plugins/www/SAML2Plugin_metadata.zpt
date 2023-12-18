@@ -14,7 +14,7 @@
 
   <p>
     <a href="" download="metadata.xml"
-       tal:attributes="href string:${context/absolute_url}/metadata.xml;
+       tal:attributes="href string:${context/absolute_url};
                        download string:${context/getId}_metadata.xml">
       Download the metadata file
     </a>
