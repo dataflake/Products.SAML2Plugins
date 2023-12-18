@@ -49,6 +49,7 @@ class SAML2PluginBase(BasePlugin,
     """ SAML 2.0 base plugin class """
 
     security = ClassSecurityInfo()
+    default_idp = None
     login_attribute = 'login'
     assign_roles = []
     metadata_valid = 2
@@ -72,7 +73,12 @@ class SAML2PluginBase(BasePlugin,
                         'action': 'manage_metadata'},)
                       + BasePlugin.manage_options)
 
-    _properties = (({'id': 'login_attribute',
+    _properties = (({'id': 'default_idp',
+                     'label': 'Default Identity Provider',
+                     'type': 'selection',
+                     'select_variable': 'getIdentityProviders',
+                     'mode': 'w'},
+                    {'id': 'login_attribute',
                      'label': 'Login attribute (required)',
                      'type': 'string',
                      'mode': 'w'},
@@ -122,6 +128,12 @@ class SAML2PluginBase(BasePlugin,
             if special_role in roles:
                 roles.remove(special_role)
         return tuple(roles)
+
+    @security.protected(manage_users)
+    def getIdentityProviders(self):
+        """ Get a list of IdentityProvider EntityId strings """
+        cfg = self.getPySAML2Configuration()
+        return sorted(cfg.metadata.keys())
 
     @security.public
     def getLoginURL(self, request):

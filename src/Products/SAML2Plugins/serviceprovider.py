@@ -78,6 +78,21 @@ class SAML2ServiceProvider:
             client.local_logout(name_id_instance)
 
     @security.private
+    def getIdPEntityID(self):
+        """ Get the entityID for the currently used Identity Provider
+
+        The configuration metadata can point to more than one Identity
+        Provider, but the plugin can only work with one of them at a time.
+
+        If you use more than one IdP make sure to set the default value in the
+        ZMI Properties tab.
+
+        Returns:
+            A string for the IdP entityID or None
+        """
+        return self.default_idp or None
+
+    @security.private
     def getIdPAuthenticationURL(self):
         """ Prepare a SAML 2.0 authentication request
 
@@ -85,7 +100,8 @@ class SAML2ServiceProvider:
             A URL with query string for HTTP-Redirect
         """
         client = self.getPySAML2Client()
-        req_id, info = client.prepare_for_authenticate()
+        req_id, info = client.prepare_for_authenticate(
+                            entityid=self.getIdPEntityID())
         headers = dict(info['headers'])
         return headers['Location']
 
@@ -93,15 +109,15 @@ class SAML2ServiceProvider:
     def handleACSRequest(self, saml_response, binding='POST'):
         """ Handle incoming SAML 2.0 assertions """
         user_info = {}
-        saml2_client = self.getPySAML2Client()
+        client = self.getPySAML2Client()
 
         if binding == 'POST':
             saml_binding = BINDING_HTTP_POST
         else:
             saml_binding = BINDING_HTTP_REDIRECT
 
-        saml_resp = saml2_client.parse_authn_request_response(
-                        saml_response, saml_binding)
+        saml_resp = client.parse_authn_request_response(saml_response,
+                                                        saml_binding)
 
         if saml_resp is not None:
             # Available data:

@@ -79,8 +79,8 @@ def setConfigurationDict(uid, config):
     CONFIGS[uid] = config
 
 
-def clearAllCaches():
-    """ Clear all cached configurations, used by unit tests """
+def clearConfigurationCaches():
+    """ Clear all cached configurations """
     CONFIGS.clear()
 
 

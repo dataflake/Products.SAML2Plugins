@@ -19,7 +19,7 @@ import unittest
 import urllib
 from unittest.mock import MagicMock
 
-from ..configuration import clearAllCaches
+from ..configuration import clearConfigurationCaches
 from ..configuration import getConfigurationDict
 from ..configuration import setConfigurationDict
 from .dummy import DummyNameId
@@ -35,7 +35,7 @@ class PluginTestCase(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        clearAllCaches()
+        clearConfigurationCaches()
 
     def _makeOne(self, *args, **kw):
         configuration_folder = kw.pop('configuration_folder', None)
@@ -100,6 +100,7 @@ class SAML2PluginBaseTests:
         plugin = self._makeOne('test1')
         self.assertEqual(plugin.getId(), 'test1')
         self.assertEqual(plugin.title, '')
+        self.assertEqual(plugin.default_idp, None)
         self.assertEqual(plugin.login_attribute, 'login')
         self.assertEqual(plugin.metadata_valid, 2)
         self.assertFalse(plugin.metadata_sign)
@@ -119,6 +120,13 @@ class SAML2PluginBaseTests:
         self.assertIsNone(getConfigurationDict(plugin._uid))
         self.assertIsInstance(plugin._uid, str)
         self.assertTrue(plugin._uid)
+
+    def test_getIdentityProviders(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+
+        self.assertEqual(plugin.getIdentityProviders(),
+                         ['https://saml.example.com/entityid'])
 
     def test_authenticateCredentials(self):
         plugin = self._makeOne('test1')
