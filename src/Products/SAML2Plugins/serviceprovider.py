@@ -78,8 +78,8 @@ class SAML2ServiceProvider:
             client.local_logout(name_id_instance)
 
     @security.private
-    def getIdPEntityID(self):
-        """ Get the entityID for the currently used Identity Provider
+    def getDefaultIdPEntityID(self):
+        """ Get the entityID for the default Identity Provider
 
         The configuration metadata can point to more than one Identity
         Provider, but the plugin can only work with one of them at a time.
@@ -93,15 +93,17 @@ class SAML2ServiceProvider:
         return self.default_idp or None
 
     @security.private
-    def getIdPAuthenticationURL(self):
+    def getIdPAuthenticationURL(self, idp_entityid=None):
         """ Prepare a SAML 2.0 authentication request
 
         Returns:
             A URL with query string for HTTP-Redirect
         """
+        if not idp_entityid:
+            idp_entityid = self.getDefaultIdPEntityID()
         client = self.getPySAML2Client()
         req_id, info = client.prepare_for_authenticate(
-                            entityid=self.getIdPEntityID())
+                            entityid=idp_entityid)
         headers = dict(info['headers'])
         return headers['Location']
 
