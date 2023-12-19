@@ -75,7 +75,11 @@ class SAML2PluginBase(BasePlugin,
                         'action': 'manage_metadata'},)
                       + BasePlugin.manage_options)
 
-    _properties = (({'id': 'default_idp',
+    _properties = (({'id': '_uid',
+                     'label': 'Plugin unique ID (read-only)',
+                     'type': 'string',
+                     'mode': 'r'},
+                    {'id': 'default_idp',
                      'label': 'Default Identity Provider',
                      'type': 'selection',
                      'select_variable': 'getIdentityProviders',

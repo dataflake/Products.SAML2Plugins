@@ -21,8 +21,6 @@ import urllib
 from unittest.mock import MagicMock
 
 from ..configuration import clearConfigurationCaches
-from ..configuration import getConfigurationDict
-from ..configuration import setConfigurationDict
 from .dummy import DummyNameId
 from .dummy import DummyRequest
 from .dummy import DummyUser
@@ -66,7 +64,7 @@ class PluginTestCase(unittest.TestCase):
         cfg['metadata']['local'] = [self._test_path('mocksaml_metadata.xml')]
         # This should only be used for testing
         cfg['service']['sp']['allow_unsolicited'] = True
-        setConfigurationDict(plugin._uid, cfg)
+        plugin._configuration = cfg
 
 
 class InterfaceTestMixin:
@@ -107,7 +105,7 @@ class SAML2PluginBaseTests:
         self.assertFalse(plugin.metadata_sign)
         self.assertFalse(plugin.metadata_envelope)
         self.assertIn('etc', plugin.getConfigurationFolderPath())
-        self.assertIsNone(getConfigurationDict(plugin._uid))
+        self.assertIsNone(plugin._configuration)
         self.assertIsInstance(plugin._uid, str)
         self.assertTrue(plugin._uid)
 
@@ -118,7 +116,7 @@ class SAML2PluginBaseTests:
         self.assertEqual(plugin.title, 'This is a test')
         self.assertEqual(plugin.getConfigurationFolderPath(),
                          TEST_CONFIG_FOLDER)
-        self.assertIsNone(getConfigurationDict(plugin._uid))
+        self.assertIsNone(plugin._configuration)
         self.assertIsInstance(plugin._uid, str)
         self.assertTrue(plugin._uid)
 

@@ -31,18 +31,6 @@ from App.config import getConfiguration
 CONFIGS = {}
 
 
-def getConfigurationDict(uid):
-    """ Retrieve a configuration mapping by plugin UID
-
-    Args:
-        uid (str): The plugin UID
-
-    Returns:
-        A dictionary object or None
-    """
-    return CONFIGS.get(uid, None)
-
-
 def getPySAML2Configuration(uid):
     """ Retrieve a PySAML2 configuration by plugin UID
 
@@ -67,18 +55,6 @@ def setPySAML2Configuration(uid, config):
     CONFIGS[f'pysaml2_{uid}'] = config
 
 
-def setConfigurationDict(uid, config):
-    """ Cache a configuration mapping
-
-    Args:
-        uid (str): A unique identifier (the plugin UID)
-
-        config (dict or None):
-            A dictionary instance or None to clear it
-    """
-    CONFIGS[uid] = config
-
-
 def clearConfigurationCaches():
     """ Clear all cached configurations """
     CONFIGS.clear()
@@ -88,6 +64,8 @@ class PySAML2ConfigurationSupport:
     """ SAML 2.0 base plugin class """
 
     security = ClassSecurityInfo()
+
+    _configuration = None
 
     #
     # ZMI helpers
@@ -248,6 +226,7 @@ class PySAML2ConfigurationSupport:
     def manage_reloadConfiguration(self, REQUEST):
         """ ZMI helper to force-reload the configuration file """
         clearConfigurationCaches()
+        self._configuration = None
         qs = 'manage_tabs_message=Configuration reloaded'
         REQUEST.RESPONSE.redirect(
             f'{self.absolute_url()}/manage_configuration?{qs}')
@@ -256,16 +235,12 @@ class PySAML2ConfigurationSupport:
     def getConfiguration(self, key=None, reload=False):
         """ Read SAML configuration keys from the instance or from a file.
 
-        The configuration file is expected to be JSON and the keys and values
-        correspond to the ``pysaml2`` configuration, see
-        https://pysaml2.readthedocs.io/en/latest/howto/config.html. There's
-        one difference: The examples in the pysaml2 documentation import some
-        string values from the pysaml2 module for convenience, like
-        ``BINDING_HTTP_REDIRECT``. In the JSON file you must use the real value
-        string, like 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'.
+        The configuration file is expected to be a valid ``pysaml2``
+        configuration file, see
+        https://pysaml2.readthedocs.io/en/latest/howto/config.html.
 
-        Stores the extracted configuration values in a module-level
-        mapping for easy retrieval later.
+        Stores the extracted configuration values on the instance
+        for easy retrieval later.
 
         Args:
             key (str or None): A configuration key from the configuration file.
@@ -277,11 +252,10 @@ class PySAML2ConfigurationSupport:
 
         Raises ``KeyError`` if the configuration does not contain the key
         """
-        cfg_dict = getConfigurationDict(self._uid)
+        cfg_dict = self._configuration
 
         if cfg_dict is None or reload is True:
-            cfg_dict = self._load_configuration_file()
-            setConfigurationDict(self._uid, cfg_dict)
+            cfg_dict = self._configuration = self._load_configuration_file()
 
         if key is None:
             return cfg_dict

@@ -8,8 +8,11 @@
   <h3>SAML 2.0 Plugin configuration</h3>
 
   <p class="form-help">
-    The SAML configuration options for this plugin are stored in a JSON file on
-    the filesystem at <i>${context/getConfigurationFilePath}</i>.
+    The SAML configuration options for this plugin are stored in a
+    <a href="https://pysaml2.readthedocs.io/en/latest/howto/config.html"
+       target="_new">
+      <code>pysaml2</code> configuration file
+    </a> at <i>${context/getConfigurationFilePath}</i>.
     The file name is fixed per plugin instance. The site-wide configuration
     folder can be set in the Zope instance configuration file, which is
     normally named <i>zope.conf</i>.
