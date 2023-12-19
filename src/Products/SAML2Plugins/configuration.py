@@ -71,6 +71,20 @@ class PySAML2ConfigurationSupport:
     # ZMI helpers
     #
     @security.protected(manage_users)
+    def getAttributeMaps(self):
+        """ Get the attribute conversion maps from the configuration """
+        name_formats = {}
+        pysaml2_cfg = self.getPySAML2Configuration()
+
+        for attr_converter in pysaml2_cfg.attribute_converters:
+            mappings = name_formats.setdefault(attr_converter.name_format, [])
+            for key, value in attr_converter._fro.items():
+                mappings.append({'from': key, 'to': value})
+
+        return tuple([{'name_format': name_format, 'maps': maps} for
+                      name_format, maps in name_formats.items()])
+
+    @security.protected(manage_users)
     def getConfigurationFileName(self):
         """ Get the fixed configuration file name for this plugin instance """
         return f'saml2_cfg_{self._uid}.py'

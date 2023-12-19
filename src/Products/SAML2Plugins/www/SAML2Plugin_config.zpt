@@ -66,6 +66,42 @@
         CONFIG
       </pre>
     </b>
+
+    <h4>Attribute maps</h4>
+
+    <p class="form-help">
+      Attribute maps describe how SAML attribute names from the Identity
+      Provider are translated to attribute names for the Zope user object. You
+      can <a href="https://pysaml2.readthedocs.io/en/latest/howto/config.html#attribute-map-dir" target="_new">designate a folder for map files to set your own custom map</a>
+      in the configuration file. If you set up your own maps they will replace
+      the default maps that come with <code>pysaml2</code>. <b>Please note:</b>
+      SAML attributes that are not mapped will be filtered out unless you
+      set <a href="https://pysaml2.readthedocs.io/en/latest/howto/config.html#allow-unsolicited" target="_new"><code>allow_unknown_attributes</code></a>
+      in the configuration.
+    </p>
+
+    <div tal:repeat="data context/getAttributeMaps">
+      <h5 tal:content="data/name_format">FORMAT</h5>
+
+      <table class="table table-sm table-striped">
+        <thead class="thead-light">
+          <tr class="table-sm">
+            <th scope="col">
+              SAML attribute (format <code>${data/name_format}</code>)
+            </th>
+            <th scope="col">Zope user attribute</th>
+          </tr>
+        </thead>
+
+        <tr tal:repeat="attr_map data/maps">
+          <td class="text-nowrap"
+              tal:content="attr_map/from">FROM</td>
+          <td class="text-nowrap"
+              tal:content="attr_map/to">TO</td>
+        </tr>
+      </table>
+    </div>
+
   </div>
 
 </main>

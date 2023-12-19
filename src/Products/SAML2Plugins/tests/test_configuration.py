@@ -263,3 +263,12 @@ class PySAML2ConfigurationTests(PluginTestCase):
         self.assertTrue(plugin._configuration)
         plugin.manage_reloadConfiguration(DummyRequest())
         self.assertFalse(plugin._configuration)
+
+    def test_getAttributeMaps(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+
+        # There isn't much to test other than the fact that something
+        # gets returned.
+        attr_maps = plugin.getAttributeMaps()
+        self.assertIsInstance(attr_maps, tuple)
