@@ -26,4 +26,5 @@ class SAML2MetadataViewTests(PluginViewsTestBase):
         view = self._makeOne()
         result = view()
 
-        self.assertTrue(result.startswith('<ns0:EntityDescriptor'))
+        self.assertTrue(result.startswith(
+                            '<?xml version="1.0" ?>\n<ns0:EntityDescriptor'))

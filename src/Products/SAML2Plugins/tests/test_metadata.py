@@ -32,18 +32,20 @@ class SAML2MetadataTests(PluginTestCase):
         # Use an envelope
         plugin.metadata_envelope = True
         xml_string = plugin.generateMetadata()
-        self.assertTrue(xml_string.startswith('<ns0:EntitiesDescriptor'))
+        self.assertTrue(xml_string.startswith(
+                        '<?xml version="1.0" ?>\n<ns0:EntitiesDescriptor'))
 
         # No envelope
         plugin.metadata_envelope = False
         xml_string = plugin.generateMetadata()
-        self.assertTrue(xml_string.startswith('<ns0:EntityDescriptor'))
+        self.assertTrue(xml_string.startswith(
+                        '<?xml version="1.0" ?>\n<ns0:EntityDescriptor'))
 
         # No envelope and signing
         plugin.metadata_sign = True
         xml_string = plugin.generateMetadata()
         self.assertTrue(xml_string.startswith(
-                        '<?xml version="1.0"?>\n<ns0:EntityDescriptor'))
+                        '<?xml version="1.0" ?>\n<ns0:EntityDescriptor'))
         self.assertIn('<ns1:SignatureValue>', xml_string)
 
     def test_getMetadataZMIRepresentation(self):
@@ -56,7 +58,7 @@ class SAML2MetadataTests(PluginTestCase):
         plugin.getConfiguration()  # Generate the internal configuration
 
         # Without massaging the configuration the method will return an error
-        self.assertIn('Error creating metadata representation:',
+        self.assertIn('Error creating metadata XML:',
                       plugin.getMetadataZMIRepresentation())
 
         # Massage the configuration to make it valid

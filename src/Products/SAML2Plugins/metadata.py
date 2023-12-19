@@ -37,11 +37,9 @@ class SAML2MetadataProvider:
     def getMetadataZMIRepresentation(self):
         """ Returns a readable metadata representation for the ZMI """
         try:
-            data_dom = parseString(self.generateMetadata())
-            return data_dom.toprettyxml(indent='  ')
+            return self.generateMetadata()
         except Exception as exc:
-            return ('Error creating metadata representation:\n'
-                    f'{exc}')
+            return (f'Error creating metadata XML:\n{exc}')
 
     @security.protected(manage_users)
     def generateMetadata(self):
@@ -92,7 +90,11 @@ class SAML2MetadataProvider:
             xmldoc = metadata_tostring_fix(entity, nspair, xmldoc)
 
         if isinstance(xmldoc, bytes):
-            return xmldoc.decode("utf-8")
+            xmldoc = xmldoc.decode("utf-8")
+
+        # Transform to a pretty representation
+        data_dom = parseString(xmldoc)
+        return data_dom.toprettyxml(indent='  ')
 
         return xmldoc
 
