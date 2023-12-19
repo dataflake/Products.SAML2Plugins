@@ -268,6 +268,12 @@ class SAML2PluginBase(BasePlugin,
                 session_info['last_active'] = now_secs
                 request.SESSION.set(self._uid, session_info)
 
+            if self.login_attribute not in session_info:
+                logger.warn('extractCredentials: Login attribute '
+                            f'{self.login_attribute} not in attributes '
+                            ', '.join(session_info.keys()))
+                return creds
+
             creds['login'] = session_info[self.login_attribute]
             creds['password'] = ''
             creds['remote_host'] = request.get('REMOTE_HOST', '')

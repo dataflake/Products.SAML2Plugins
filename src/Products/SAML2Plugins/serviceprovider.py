@@ -144,9 +144,12 @@ class SAML2ServiceProvider:
                 user_info['last_active'] = int(time.time())
 
             if not user_info.get('_login'):
-                user_info['_login'] = f'({self.login_attribute} not in data)'
+                logger.warn(
+                    'handleACSRequest: Cannot find login attribute '
+                    f'{self.login_attribute}, check your attribute maps!')
             logger.debug(
-                f'handleACSRequest: Got data for {user_info["_login"]}')
+                'handleACSRequest: Got data for '
+                f'{user_info.get("_login", "n/a")}')
         else:
             logger.debug('handleACSRequest: Invalid SamlResponse, no user')
 
