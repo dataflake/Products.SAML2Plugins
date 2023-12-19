@@ -15,6 +15,7 @@
 
 import os
 import subprocess
+import time
 import unittest
 import urllib
 from unittest.mock import MagicMock
@@ -244,18 +245,33 @@ class SAML2PluginBaseTests:
         self.assertEqual(plugin.extractCredentials(req),
                          {'plugin_uid': plugin._uid})
 
-        # Add some session data
+        # Add some session data, but no last activity indicator
         req.set('REMOTE_ADDR', '0.0.0.0')
         req.set('REMOTE_HOST', 'somehost')
         session[plugin._uid] = {'name_id': DummyNameId('foo'),
                                 plugin.login_attribute: 'testuser1',
                                 'issuer': 'https://samltest'}
         self.assertEqual(plugin.extractCredentials(req),
+                         {'plugin_uid': plugin._uid})
+
+        # Add a last activity indicator, but it's too old
+        max_age = int(time.time()) - (plugin.inactivity_timeout*3600)
+        session[plugin._uid]['last_active'] = (max_age-1)
+        self.assertEqual(plugin.extractCredentials(req),
+                         {'plugin_uid': plugin._uid})
+
+        # Set last activity indicator to an acceptable value
+        session[plugin._uid]['last_active'] = (max_age+10)
+        self.assertEqual(plugin.extractCredentials(req),
                          {'plugin_uid': plugin._uid,
                           'login': 'testuser1',
                           'password': '',
                           'remote_host': 'somehost',
                           'remote_address': '0.0.0.0'})
+        # The last activity indicator gets updated as well
+        self.assertAlmostEqual(req.SESSION[plugin._uid]['last_active'],
+                               int(time.time()),
+                               delta=5)
 
     def test_getPropertiesForUser(self):
         plugin = self._makeOne('test1')

@@ -14,6 +14,7 @@
 """
 
 import logging
+import time
 
 from saml2 import BINDING_HTTP_POST
 from saml2 import BINDING_HTTP_REDIRECT
@@ -138,6 +139,9 @@ class SAML2ServiceProvider:
                 # For convenience store login under a fixed key
                 if key == self.login_attribute:
                     user_info['_login'] = value
+
+                # Initialize session activity marker
+                user_info['last_active'] = int(time.time())
 
             if not user_info.get('_login'):
                 user_info['_login'] = f'({self.login_attribute} not in data)'

@@ -15,6 +15,7 @@
 
 import copy
 import logging
+import time
 import uuid
 from urllib.parse import quote
 
@@ -52,6 +53,7 @@ class SAML2PluginBase(BasePlugin,
     default_idp = None
     login_attribute = 'login'
     assign_roles = []
+    inactivity_timeout = 2
     metadata_valid = 2
     metadata_sign = False
     metadata_envelope = False
@@ -81,6 +83,10 @@ class SAML2PluginBase(BasePlugin,
                     {'id': 'login_attribute',
                      'label': 'Login attribute (required)',
                      'type': 'string',
+                     'mode': 'w'},
+                    {'id': 'inactivity_timeout',
+                     'label': 'Session inactivity timeout (hours)',
+                     'type': 'int',
                      'mode': 'w'},
                     {'id': 'assign_roles',
                      'label': 'Roles for SAML-authenticated users',
@@ -247,6 +253,15 @@ class SAML2PluginBase(BasePlugin,
         creds = {'plugin_uid': self._uid}
         session_info = request.SESSION.get(self._uid, None)
         if session_info:
+            # Don't accept sessions older than the activity timeout
+            now_secs = int(time.time())
+            max_inactive = now_secs - (self.inactivity_timeout*3600)
+            if session_info.get('last_active', 0) < max_inactive:
+                return creds
+            else:
+                session_info['last_active'] = now_secs
+                request.SESSION.set(self._uid, session_info)
+
             creds['login'] = session_info[self.login_attribute]
             creds['password'] = ''
             creds['remote_host'] = request.get('REMOTE_HOST', '')
