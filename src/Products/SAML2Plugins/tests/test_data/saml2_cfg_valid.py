@@ -10,12 +10,6 @@ CONFIG = {
                 "assertion_consumer_service": [
 					"http://sp.example.com/",
                 ],
-                "single_logout_service": [
-                    [
-                        "http://sp.example.com/slo",
-                        BINDING_HTTP_REDIRECT,
-                    ],
-                ],
             },
             "subject_data": [
                 "memcached",

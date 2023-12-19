@@ -217,7 +217,9 @@ class SAML2PluginBase(BasePlugin,
     def resetCredentials(self, request, response):
         """ See ICredentialsResetPlugin.
 
-        Clear out user credentials locally.
+        Clear out user credentials locally. This logout process does not log
+        the user out of the Identity Provider. It just clears local session
+        information and pysaml2 caches.
 
         Args:
             request (Zope request): The incoming Zope request instance

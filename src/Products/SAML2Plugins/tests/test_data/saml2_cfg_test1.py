@@ -10,12 +10,6 @@ CONFIG = {
                 "assertion_consumer_service": [
                     "http://example.com/sp",
                 ],
-                "single_logout_service": [
-                    [
-                        "http://example.com/sp/slo",
-                        BINDING_HTTP_REDIRECT,
-                    ],
-                ],
             },
         },
     },
