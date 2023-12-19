@@ -19,6 +19,7 @@ from ..configuration import getConfigurationDict
 from ..configuration import setConfigurationDict
 from .base import TEST_CONFIG_FOLDER
 from .base import PluginTestCase
+from .dummy import DummyRequest
 
 
 class PySAML2ConfigurationTests(PluginTestCase):
@@ -256,3 +257,11 @@ class PySAML2ConfigurationTests(PluginTestCase):
                          [{'key': '-',
                            'severity': 'fatal',
                            'description': 'Cannot load configuration: BAD'}])
+
+    def test_manage_reloadConfig(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+
+        self.assertTrue(getConfigurationDict(plugin._uid))
+        plugin.manage_reloadConfiguration(DummyRequest())
+        self.assertFalse(getConfigurationDict(plugin._uid))

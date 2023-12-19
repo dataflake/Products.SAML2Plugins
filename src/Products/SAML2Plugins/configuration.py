@@ -244,6 +244,14 @@ class PySAML2ConfigurationSupport:
 
         return sorted(errors, key=operator.itemgetter('key'))
 
+    @security.protected(manage_users)
+    def manage_reloadConfiguration(self, REQUEST):
+        """ ZMI helper to force-reload the configuration file """
+        clearConfigurationCaches()
+        qs = 'manage_tabs_message=Configuration reloaded'
+        REQUEST.RESPONSE.redirect(
+            f'{self.absolute_url()}/manage_configuration?{qs}')
+
     @security.private
     def getConfiguration(self, key=None, reload=False):
         """ Read SAML configuration keys from the instance or from a file.
@@ -310,7 +318,11 @@ class PySAML2ConfigurationSupport:
             sys.path.insert(0, mod_parent_path)
 
         try:
+            # This intricate dance is needed to allow re-loading the module
+            # at run-time
+            importlib.invalidate_caches()
             mod = importlib.import_module(self.getConfigurationModuleName())
+            mod = importlib.reload(mod)
             cfg = copy.deepcopy(mod.CONFIG)
         except ModuleNotFoundError:
             raise ValueError(f'Missing configuration file at {cfg_path}')

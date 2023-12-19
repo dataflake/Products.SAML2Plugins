@@ -15,6 +15,12 @@
     normally named <i>zope.conf</i>.
   </p>
 
+  <p>
+    <form action="manage_reloadConfiguration">
+      <button type="submit">Reload configuration</button>
+    </form>
+  </p>
+
   <p tal:condition="not:context/haveConfigurationFile">
     <b>Cannot find configuration file, please create one at
     <i>${context/getConfigurationFilePath}</i>.</b>
