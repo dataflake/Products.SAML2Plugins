@@ -81,8 +81,6 @@
     </p>
 
     <div tal:repeat="data context/getAttributeMaps">
-      <h5 tal:content="data/name_format">FORMAT</h5>
-
       <table class="table table-sm table-striped">
         <thead class="thead-light">
           <tr class="table-sm">
