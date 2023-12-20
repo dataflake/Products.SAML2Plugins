@@ -121,6 +121,14 @@ class SAML2PluginBase(BasePlugin,
         # so that each plugin in the ZODB can have a unique configuration
         self._uid = f'{id}_{str(uuid.uuid4())}'
 
+    def __setstate__(self, state):
+        # This is called when the instance is loaded from the ZODB, for example
+        # when the instance is accessed first after restarting Zope.
+        # Re-setting the SAML configuration dictionary on the instance to make
+        # sure a Zope restart causes re-reading the configuration from disk.
+        super().__setstate__(state)
+        self._configuration = None
+
     #
     #   ZMI helpers
     #

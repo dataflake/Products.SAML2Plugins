@@ -15,6 +15,7 @@
 
 import copy
 import importlib
+import logging
 import operator
 import os
 import pprint
@@ -28,6 +29,7 @@ from AccessControl.Permissions import manage_users
 from App.config import getConfiguration
 
 
+logger = logging.getLogger('Products.SAML2Plugins')
 CONFIGS = {}
 
 
@@ -287,6 +289,8 @@ class PySAML2ConfigurationSupport:
             cfg = Config()
             cfg.load(copy.deepcopy(self.getConfiguration()))
             setPySAML2Configuration(self._uid, cfg)
+            logger.debug(
+                'getPySAML2Configuration: Created pysaml2 configuration')
 
         return cfg
 
@@ -321,6 +325,8 @@ class PySAML2ConfigurationSupport:
         # Clean up sys.path and imports
         sys.path.remove(mod_parent_path)
         del mod
+
+        logger.debug(f'_load_configuration_file: Re-loaded {cfg_path}')
 
         return cfg
 
