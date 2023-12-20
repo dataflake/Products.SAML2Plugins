@@ -35,10 +35,12 @@ class DummyResponse:
         self.redirected = ''
         self.locked = False
         self.headers = {}
+        self.status = None
 
-    def redirect(self, target, lock=False):
+    def redirect(self, target, status=302, lock=False):
         self.redirected = target
         self.locked = lock
+        self.status = status
 
     def setHeader(self, name, value):
         self.headers[name] = value

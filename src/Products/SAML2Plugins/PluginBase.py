@@ -17,7 +17,6 @@ import copy
 import logging
 import time
 import uuid
-from urllib.parse import quote
 
 from AccessControl import ClassSecurityInfo
 from AccessControl.class_init import InitializeClass
@@ -153,31 +152,6 @@ class SAML2PluginBase(BasePlugin,
         cfg = self.getPySAML2Configuration()
         return sorted(cfg.metadata.keys())
 
-    @security.public
-    def getLoginURL(self, request):
-        """ Get a fully formed URL for redirecting to the Identity Provider
-
-        Args:
-            request (Zope REQUEST object): A Zope REQUEST
-
-        Returns:
-            A string with an URL for redirecting to the Identity Provider
-        """
-        url = self.getIdPAuthenticationURL()
-
-        came_from_url = request.get('came_from')
-        if came_from_url:
-            url = f'{url}&RelayState={quote(came_from_url)}'
-        else:
-            requested_url = request.get('ACTUAL_URL')
-            if requested_url:
-                qs = request.get('QUERY_STRING')
-                if qs:
-                    requested_url = f'{requested_url}?{qs}'
-                url = f'{url}&RelayState={quote(requested_url)}'
-
-        return url
-
     #
     #   IAuthenticationPlugin implementation
     #
@@ -216,9 +190,19 @@ class SAML2PluginBase(BasePlugin,
 
         Challenge the user for credentials.
         """
-        url = self.getLoginURL(request)
-        logger.debug('challenge: Redirecting for SAML 2 login')
-        response.redirect(url, lock=1)
+        req_info = self.getIdPAuthenticationData(request)
+        headers = dict(req_info['headers'])
+
+        if 'Location' in headers:
+            logger.debug('challenge: Redirecting for SAML 2 login')
+            response.redirect(headers['Location'],
+                              status=req_info.get('status', 303),
+                              lock=1)
+        else:
+            logger.debug('challenge: POST request for SAML 2 login')
+            for key, value in headers.items():
+                response.setHeader(key, value, literal=True)
+            response.setBody(req_info['data'])
 
         return True
 

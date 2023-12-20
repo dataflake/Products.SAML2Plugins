@@ -94,19 +94,40 @@ class SAML2ServiceProvider:
         return self.default_idp or None
 
     @security.private
-    def getIdPAuthenticationURL(self, idp_entityid=None):
+    def getIdPAuthenticationData(self, request, idp_entityid=None):
         """ Prepare a SAML 2.0 authentication request
 
+        Args:
+            request (REQUEST): The current Zope request object
+
+        Kwargs:
+            idp_entityid (str): The IdP entity ID to use. Defaults to the
+                Identity Provider selected on the ZMI Properties tab.
+
         Returns:
-            A URL with query string for HTTP-Redirect
+            Data to perform an authentication request, a mapping with keys
+            ``headers``, ``data`` and ``status``.
         """
+        return_url = request.get('came_from', '')
+
+        if not return_url:
+            return_url = request.get('ACTUAL_URL')
+            if return_url:
+                qs = request.get('QUERY_STRING')
+                if qs:
+                    return_url = f'{return_url}?{qs}'
+
         if not idp_entityid:
             idp_entityid = self.getDefaultIdPEntityID()
+
         client = self.getPySAML2Client()
-        req_id, info = client.prepare_for_authenticate(
-                            entityid=idp_entityid)
-        headers = dict(info['headers'])
-        return headers['Location']
+        (req_id,
+         binding,
+         http_info) = client.prepare_for_negotiated_authenticate(
+                        entityid=idp_entityid,
+                        relay_state=return_url)
+
+        return http_info
 
     @security.private
     def handleACSRequest(self, saml_response, binding='POST'):
