@@ -18,11 +18,13 @@ from AccessControl.Permissions import add_user_folders
 from Products.PluggableAuthService.PluggableAuthService import \
     registerMultiPlugin
 
+from .monkeypatch import applyPatches
 from .SAML2Plugin import SAML2Plugin
 from .SAML2Plugin import manage_addSAML2Plugin
 from .SAML2Plugin import manage_addSAML2PluginForm
 
 
+applyPatches()
 registerMultiPlugin(SAML2Plugin.meta_type)
 
 

@@ -201,7 +201,7 @@ class SAML2PluginBase(BasePlugin,
         else:
             logger.debug('challenge: POST request for SAML 2 login')
             for key, value in headers.items():
-                response.setHeader(key, value, literal=True)
+                response.setHeader(key, value)
             response.setBody(req_info['data'])
 
         return True
