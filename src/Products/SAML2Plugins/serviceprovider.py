@@ -154,7 +154,10 @@ class SAML2ServiceProvider:
 
             for key, value in saml_resp.get_identity().items():
                 if isinstance(value, (list, tuple)):
-                    value = value[0]
+                    if not value:
+                        value = ''
+                    else:
+                        value = value[0]
                 user_info[key] = value
 
                 # For convenience store login under a fixed key
