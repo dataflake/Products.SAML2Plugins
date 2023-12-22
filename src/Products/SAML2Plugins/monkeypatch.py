@@ -16,6 +16,8 @@
 import logging
 import os
 
+from xmlschema.resources import XMLResource
+
 
 logger = logging.getLogger('Products.SAML2Plugins')
 
@@ -42,27 +44,21 @@ def pysaml2_add_signature_support():
 def pysaml_add_xml_schemata():
     from saml2.xml import schema
 
-    # pysaml2 has a hardcoded list of supperted XML schemata and namespaces,
+    # pysaml2 has a hardcoded list of supported XML schemata and namespaces,
     # which does not include newer versions.
-    OLD_create_xml_schema_validator = schema._create_xml_schema_validator
+    parent_folder_path = os.path.dirname(os.path.abspath(__file__))
+    schema_data_folder = os.path.join(parent_folder_path, 'data')
+    additional_schemata = ('xenc-schema-11.xsd',)
+    schema_validator_default = schema._schema_validator_default
 
-    def create_custom_validator(source, **kwargs):
-        parent_folder_path = os.path.dirname(os.path.abspath(__file__))
-        schema_data_folder = os.path.join(parent_folder_path, 'data')
-        additional_schemata = (
-            ('http://www.w3.org/2009/xmlenc11#', 'xenc-schema-11.xsd'),
-        )
+    for filename in additional_schemata:
+        schema_path = os.path.join(schema_data_folder, filename)
+        xml_resource = XMLResource(source=schema_path, 
+                                   base_url=schema_data_folder,
+                                   allow='sandbox')
+        schema_validator_default.add_schema(source=xml_resource, build=True)
 
-        xml_schema = OLD_create_xml_schema_validator(source, kwargs)
-        for namespace, filename in additional_schemata:
-            schema_path = os.path.join(schema_data_folder, filename)
-            xml_schema.include_schema(location=namespace,
-                                      base_url=schema_path,
-                                      build=True)
-
-        return xml_schema
-
-    schema._create_xml_schema_validator = create_custom_validator
+    schema._schema_validator_default = schema_validator_default
 
 
 def applyPatches():
