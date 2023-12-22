@@ -18,6 +18,7 @@ recursive-include src *.key
 recursive-include src *.pem
 recursive-include src *.txt
 recursive-include src *.xml
+recursive-include src *.xsd
 recursive-include src *.zcml
 recursive-include src *.zpt
 include src/Products/SAML2Plugins/tests/test_data/dummy_xmlsec1

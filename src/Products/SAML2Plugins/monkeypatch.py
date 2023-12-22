@@ -53,7 +53,7 @@ def pysaml_add_xml_schemata():
 
     for filename in additional_schemata:
         schema_path = os.path.join(schema_data_folder, filename)
-        xml_resource = XMLResource(source=schema_path, 
+        xml_resource = XMLResource(source=schema_path,
                                    base_url=schema_data_folder,
                                    allow='sandbox')
         schema_validator_default.add_schema(source=xml_resource, build=True)
