@@ -222,4 +222,8 @@ class SAML2ServiceProviderTests(PluginTestCase):
         user_info = plugin.handleACSRequest(saml_response)
         self.assertEqual(user_info['_login'], 'value1')
 
-        # XXX There should be more tests here
+        # Act like the PySAML2 response processing blew up
+        # The exception should not bubble up
+        failing_client = DummyPySAML2Client(parse_result='raise_error')
+        plugin.getPySAML2Client = MagicMock(return_value=failing_client)
+        self.assertEqual(plugin.handleACSRequest(saml_response), {})

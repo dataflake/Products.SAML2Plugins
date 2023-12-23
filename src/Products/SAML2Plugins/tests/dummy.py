@@ -94,6 +94,8 @@ class DummyPySAML2Client:
         del self.users[str(name_id)]
 
     def parse_authn_request_response(self, saml_response, binding):
+        if self.parse_result == 'raise_error':
+            raise Exception('PARSE FAILURE')
         return self.parse_result
 
 

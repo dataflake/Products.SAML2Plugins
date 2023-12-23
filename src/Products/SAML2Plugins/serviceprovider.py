@@ -140,8 +140,12 @@ class SAML2ServiceProvider:
         else:
             saml_binding = BINDING_HTTP_REDIRECT
 
-        saml_resp = client.parse_authn_request_response(saml_response,
-                                                        saml_binding)
+        try:
+            saml_resp = client.parse_authn_request_response(saml_response,
+                                                            saml_binding)
+        except Exception as exc:
+            logger.error(f'Parsing SAML response failed:\n{exc}')
+            return user_info
 
         if saml_resp is not None:
             # Available data:
