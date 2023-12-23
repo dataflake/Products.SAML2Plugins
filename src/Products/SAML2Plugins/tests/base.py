@@ -100,7 +100,7 @@ class SAML2PluginBaseTests:
         self.assertEqual(plugin.getId(), 'test1')
         self.assertEqual(plugin.title, '')
         self.assertEqual(plugin.default_idp, None)
-        self.assertEqual(plugin.login_attribute, 'login')
+        self.assertEqual(plugin.login_attribute, '')
         self.assertEqual(plugin.metadata_valid, 2)
         self.assertFalse(plugin.metadata_sign)
         self.assertFalse(plugin.metadata_envelope)
@@ -119,6 +119,14 @@ class SAML2PluginBaseTests:
         self.assertIsNone(plugin._configuration)
         self.assertIsInstance(plugin._uid, str)
         self.assertTrue(plugin._uid)
+
+    def test___setstate__(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+
+        self.assertIsNotNone(plugin._configuration)
+        plugin.__setstate__(plugin.__dict__)
+        self.assertIsNone(plugin._configuration)
 
     def test_getIdentityProviders(self):
         plugin = self._makeOne('test1')
@@ -177,7 +185,7 @@ class SAML2PluginBaseTests:
 #            plugin.getLoginURL(req),
 #            f'{idp_url}&RelayState={urllib.parse.quote(came_from)}')
 
-    def test_challenge(self):
+    def test_challenge_binding_redirect(self):
         plugin = self._makeOne('test1')
         self._create_valid_configuration(plugin)
         req = DummyRequest()
@@ -210,6 +218,45 @@ class SAML2PluginBaseTests:
         self.assertIn('SAMLRequest=', response.redirected)
         self.assertIn(f'RelayState={urllib.parse.quote(full_url, safe="")}',
                       response.redirected)
+
+    def test_challenge_binding_post(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+        post_idp_cfg = self._test_path('mocksaml_metadata_binding_post.xml')
+        plugin._configuration['metadata']['local'] = [post_idp_cfg]
+        req = DummyRequest()
+        response = req.RESPONSE
+
+        # Empty request
+        self.assertTrue(plugin.challenge(req, response))
+        self.assertFalse(response.locked)
+        self.assertFalse(response.status)
+        self.assertIn('<input type="hidden" name="SAMLRequest"', response.body)
+        self.assertNotIn('<input type="hidden" name="RelayState"',
+                         response.body)
+
+        # Set a return URL
+        return_url = 'https://foo'
+        req.set('ACTUAL_URL', return_url)
+        self.assertTrue(plugin.challenge(req, response))
+        self.assertFalse(response.locked)
+        self.assertFalse(response.status)
+        self.assertIn('<input type="hidden" name="SAMLRequest"', response.body)
+        self.assertIn(
+            f'<input type="hidden" name="RelayState" value="{return_url}"/>',
+            response.body)
+
+        # Set a return URL and a query string
+        query_string = 'came_from=/foo/bar'
+        full_url = f'{return_url}?{query_string}'
+        req.set('QUERY_STRING', query_string)
+        self.assertTrue(plugin.challenge(req, response))
+        self.assertFalse(response.locked)
+        self.assertFalse(response.status)
+        self.assertIn('<input type="hidden" name="SAMLRequest"', response.body)
+        self.assertIn(
+            f'<input type="hidden" name="RelayState" value="{full_url}"/>',
+            response.body)
 
     def test_resetCredentials(self):
         plugin = self._makeOne('test1')
@@ -250,7 +297,7 @@ class SAML2PluginBaseTests:
         req.set('REMOTE_ADDR', '0.0.0.0')
         req.set('REMOTE_HOST', 'somehost')
         session[plugin._uid] = {'name_id': DummyNameId('foo'),
-                                plugin.login_attribute: 'testuser1',
+                                '_login': 'testuser1',
                                 'issuer': 'https://samltest'}
         self.assertEqual(plugin.extractCredentials(req),
                          {'plugin_uid': plugin._uid})
@@ -285,15 +332,15 @@ class SAML2PluginBaseTests:
         self.assertEqual(plugin.getPropertiesForUser(user, req), {})
 
         # session data exists, but not for the user in question
-        session.set(plugin._uid, {plugin.login_attribute: 'someoneelse'})
+        session.set(plugin._uid, {'_login': 'someoneelse'})
         self.assertEqual(plugin.getPropertiesForUser(user, req), {})
 
         # Correct session data
         session.set(plugin._uid,
-                    {plugin.login_attribute: 'testuser',
+                    {'_login': 'testuser',
                      'someproperty': 'foo'})
         self.assertEqual(plugin.getPropertiesForUser(user, req),
-                         {plugin.login_attribute: 'testuser',
+                         {'_login': 'testuser',
                           'someproperty': 'foo'})
 
     def test_getCandidateRoles(self):
@@ -327,11 +374,11 @@ class SAML2PluginBaseTests:
         self.assertEqual(plugin.getRolesForPrincipal(user, req), ())
 
         # session data exists, but not for the user in question
-        session.set(plugin._uid, {plugin.login_attribute: 'someoneelse'})
+        session.set(plugin._uid, {'_login': 'someoneelse'})
         self.assertEqual(plugin.getRolesForPrincipal(user, req), ())
 
         # Correct session data
-        session.set(plugin._uid, {plugin.login_attribute: 'testuser'})
+        session.set(plugin._uid, {'_login': 'testuser'})
 
         # There are no roles to assign set on the plugin yet
         self.assertEqual(plugin.getRolesForPrincipal(user, req), ())

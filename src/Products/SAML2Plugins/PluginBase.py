@@ -50,7 +50,7 @@ class SAML2PluginBase(BasePlugin,
 
     security = ClassSecurityInfo()
     default_idp = None
-    login_attribute = 'login'
+    login_attribute = ''
     assign_roles = []
     inactivity_timeout = 2
     metadata_valid = 2
@@ -84,7 +84,7 @@ class SAML2PluginBase(BasePlugin,
                      'select_variable': 'getIdentityProviders',
                      'mode': 'w'},
                     {'id': 'login_attribute',
-                     'label': 'Login attribute (required)',
+                     'label': 'Login attribute (SAML subject if empty)',
                      'type': 'string',
                      'mode': 'w'},
                     {'id': 'inactivity_timeout',
@@ -260,13 +260,7 @@ class SAML2PluginBase(BasePlugin,
                 session_info['last_active'] = now_secs
                 request.SESSION.set(self._uid, session_info)
 
-            if self.login_attribute not in session_info:
-                logger.warn('extractCredentials: Login attribute '
-                            f'{self.login_attribute} not in attributes '
-                            ', '.join(session_info.keys()))
-                return creds
-
-            creds['login'] = session_info[self.login_attribute]
+            creds['login'] = session_info['_login']
             creds['password'] = ''
             creds['remote_host'] = request.get('REMOTE_HOST', '')
             creds['remote_address'] = request.get('REMOTE_ADDR', '')
@@ -288,10 +282,11 @@ class SAML2PluginBase(BasePlugin,
         properties = {}
         session_info = request.SESSION.get(self._uid, None)
 
-        if session_info and user.getId() == session_info[self.login_attribute]:
-            login = session_info.get('_login', 'n/a')
+        if session_info and user.getId() == session_info['_login']:
             properties = copy.deepcopy(session_info)
-            logger.debug(f'getPropertiesForUser: Found data for {login}')
+            logger.debug(
+                'getPropertiesForUser: Found data for '
+                f'{session_info["_login"]}')
         else:
             logger.debug('getPropertiesForUser: No login session active')
 
@@ -310,7 +305,7 @@ class SAML2PluginBase(BasePlugin,
         session_info = request.SESSION.get(self._uid, None)
 
         if session_info and \
-           principal.getId() == session_info[self.login_attribute]:
+           principal.getId() == session_info['_login']:
             roles = self.assign_roles
             logger.debug('getRolesForPrincipal: Found roles for '
                          f'{principal.getId()}')

@@ -36,6 +36,7 @@ class DummyResponse:
         self.locked = False
         self.headers = {}
         self.status = None
+        self.body = ''
 
     def redirect(self, target, status=302, lock=False):
         self.redirected = target
@@ -44,6 +45,9 @@ class DummyResponse:
 
     def setHeader(self, name, value):
         self.headers[name] = value
+
+    def setBody(self, body):
+        self.body = body
 
 
 class DummyRequest:
@@ -70,11 +74,15 @@ class DummyNameId:
         self.sp_provided_id = 'sp_provided_id_value'
         self.text = name
 
+    def __str__(self):
+        return f'<DummyNameId {self.text}>'
+
 
 class DummyPySAML2Client:
 
-    def __init__(self):
+    def __init__(self, parse_result=None):
         self.users = {}
+        self.parse_result = parse_result
 
     def _store_name_id(self, name_id):
         self.users[str(name_id)] = True
@@ -84,3 +92,23 @@ class DummyPySAML2Client:
 
     def local_logout(self, name_id):
         del self.users[str(name_id)]
+
+    def parse_authn_request_response(self, saml_response, binding):
+        return self.parse_result
+
+
+class DummySAMLResponse:
+
+    def __init__(self, subject=None, issuer='', identity={}):
+        self._subject = subject
+        self._issuer = issuer
+        self._identity = identity
+
+    def get_subject(self):
+        return self._subject
+
+    def issuer(self):
+        return self._issuer
+
+    def get_identity(self):
+        return self._identity

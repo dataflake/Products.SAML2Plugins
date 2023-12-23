@@ -24,7 +24,6 @@ additional-config = [
 [manifest]
 additional-rules = [
     "include *.yaml",
-    "recursive-include src *.json",
     "recursive-include src *.key",
     "recursive-include src *.pem",
     "recursive-include src *.txt",

@@ -149,8 +149,14 @@ class SAML2ServiceProvider:
             # saml_resp.get_subject(): NameID instance for user id
             # saml_resp.ava: contains result of saml_resp.get_identity()
             # saml_resp.session_info(): user attributes plus session info
-            user_info['name_id'] = str(saml_resp.get_subject())
+            name_id_object = saml_resp.get_subject()
+            user_info['name_id'] = str(name_id_object)
             user_info['issuer'] = saml_resp.issuer()
+
+            if not self.login_attribute:
+                # If no login attribute has been specified, use the token
+                # sent as the subject text value.
+                user_info['_login'] = name_id_object.text
 
             for key, value in saml_resp.get_identity().items():
                 if isinstance(value, (list, tuple)):
@@ -160,20 +166,23 @@ class SAML2ServiceProvider:
                         value = value[0]
                 user_info[key] = value
 
-                # For convenience store login under a fixed key
-                if key == self.login_attribute:
+                # If a login attribute has been specified, use
+                # that as Zope login
+                if self.login_attribute and key == self.login_attribute:
                     user_info['_login'] = value
 
                 # Initialize session activity marker
                 user_info['last_active'] = int(time.time())
 
             if not user_info.get('_login'):
-                logger.warn(
+                logger.warning(
                     'handleACSRequest: Cannot find login attribute '
-                    f'{self.login_attribute}, check your attribute maps!')
+                    f'{self.login_attribute}, check attribute maps '
+                    'or login attribute setting on the plugin!')
+                return {}
+
             logger.debug(
-                'handleACSRequest: Got data for '
-                f'{user_info.get("_login", "n/a")}')
+                'handleACSRequest: Got data for {user_info["_login"]}')
         else:
             logger.debug('handleACSRequest: Invalid SamlResponse, no user')
 
