@@ -24,6 +24,7 @@ additional-config = [
 [manifest]
 additional-rules = [
     "include *.yaml",
+    "recursive-include docs *.png",
     "recursive-include src *.key",
     "recursive-include src *.pem",
     "recursive-include src *.txt",
@@ -37,6 +38,7 @@ additional-rules = [
 [check-manifest]
 additional-ignores = [
     "docs/_build/html/_static/*",
+    "docs/_build/html/_images/*",
     ]
 
 [coverage]

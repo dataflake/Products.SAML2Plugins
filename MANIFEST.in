@@ -13,6 +13,7 @@ recursive-include docs Makefile
 
 recursive-include src *.py
 include *.yaml
+recursive-include docs *.png
 recursive-include src *.key
 recursive-include src *.pem
 recursive-include src *.txt
