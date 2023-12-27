@@ -34,12 +34,22 @@ Glossary
     so only those explicitly installed in the virtual environment are
     available.
 
+  xmlsec1
+    The filesystem utility used by the :term:`pysaml2` library to handle SAML
+    message signing and encryption. See https://www.aleksey.com/xmlsec/ for
+    details.
+
   zc.buildout
     `zc.buildout <http://buildout.org>`_ is a Python-based build system
     for creating, assembling and deploying applications.
 
   ZCML
     XML-based configuration language used by Zope.
+
+  ZEO
+    The `ZEO <https://pypi.org/project/ZEO/>`_ package enables sharing a
+    Zope Object Database (ZODB) between several Zope instances. It is used to
+    scale a Zope application.
 
   ZMI
     Zope offers the ZMI (Zope Managment Interface) for managing your 

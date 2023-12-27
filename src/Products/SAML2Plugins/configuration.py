@@ -78,10 +78,12 @@ class PySAML2ConfigurationSupport:
         name_formats = {}
         pysaml2_cfg = self.getPySAML2Configuration()
 
-        for attr_converter in pysaml2_cfg.attribute_converters:
-            mappings = name_formats.setdefault(attr_converter.name_format, [])
-            for key, value in attr_converter._fro.items():
-                mappings.append({'from': key, 'to': value})
+        if pysaml2_cfg is not None:
+            for attr_converter in pysaml2_cfg.attribute_converters:
+                mappings = name_formats.setdefault(
+                            attr_converter.name_format, [])
+                for key, value in attr_converter._fro.items():
+                    mappings.append({'from': key, 'to': value})
 
         return tuple([{'name_format': name_format, 'maps': maps} for
                       name_format, maps in name_formats.items()])
@@ -180,6 +182,23 @@ class PySAML2ConfigurationSupport:
                 {'key': 'cert_file',
                  'severity': 'error',
                  'description': msg})
+
+        # Check for encryption keys and files
+        encryption_settings = configuration.get('encryption_keypairs', [])
+        for enc_data in encryption_settings:
+            cert_file = enc_data.get('cert_file', None)
+            if cert_file and not os.path.isfile(os.path.abspath(cert_file)):
+                errors.append(
+                  {'key': 'cert_file (encryption_keypairs)',
+                   'severity': 'error',
+                   'description': f'Cannot read certificate file {cert_file}'})
+
+            key_file = enc_data.get('key_file', None)
+            if key_file and not os.path.isfile(os.path.abspath(key_file)):
+                errors.append(
+                  {'key': 'key_file (encryption_keypairs)',
+                   'severity': 'error',
+                   'description': f'Cannot read private key file {key_file}'})
 
         # The ``xmlsec1`` binary must be available
         xmlsec_binary = configuration.get('xmlsec_binary', None)

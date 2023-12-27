@@ -9,6 +9,10 @@ Narrative documentation explaining how to use :mod:`Products.SAML2Plugins`.
     :maxdepth: 2
     
     installation
+    configuration
+    usage
+    troubleshooting
+    links
     development
     changes
 

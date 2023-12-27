@@ -16,6 +16,7 @@
 import copy
 import logging
 import time
+import urllib
 import uuid
 
 from AccessControl import ClassSecurityInfo
@@ -150,7 +151,11 @@ class SAML2PluginBase(BasePlugin,
     def getIdentityProviders(self):
         """ Get a list of IdentityProvider EntityId strings """
         cfg = self.getPySAML2Configuration()
-        return sorted(cfg.metadata.keys())
+        metadata = getattr(cfg, 'metadata', None)
+        if metadata is not None:
+            return tuple(sorted(metadata.keys()))
+
+        return ()
 
     #
     #   IAuthenticationPlugin implementation
@@ -190,21 +195,57 @@ class SAML2PluginBase(BasePlugin,
 
         Challenge the user for credentials.
         """
-        req_info = self.getIdPAuthenticationData(request)
-        headers = dict(req_info['headers'])
+        self._challenge(self.getIdPAuthenticationData(request), response)
+
+        return True
+
+    @security.private
+    def _challenge(self, saml_request_info, response):
+        """ Factored-out challenge mechanism decision
+
+        Handles redirecting or POSTing to the identity provider
+        """
+        headers = dict(saml_request_info['headers'])
 
         if 'Location' in headers:
             logger.debug('challenge: Redirecting for SAML 2 login')
             response.redirect(headers['Location'],
-                              status=req_info.get('status', 303),
+                              status=saml_request_info.get('status', 303),
                               lock=1)
         else:
             logger.debug('challenge: POST request for SAML 2 login')
             for key, value in headers.items():
                 response.setHeader(key, value)
-            response.setBody(req_info['data'])
+            response.setBody(saml_request_info['data'])
 
-        return True
+    @security.public
+    def login(self, REQUEST):
+        """ Trigger a manual login challenge
+
+        This publicly available method can be used to manually trigger a
+        login challenge and pass along information about the preferred
+        identity provider to use.
+
+        Raises ValueError if an identity provider choice is passed in that is
+        not part of the configuration.
+        """
+        saml_req_info = None
+        idp_entityid = urllib.parse.unquote(REQUEST.get('idp', ''))
+
+        if idp_entityid:
+            if idp_entityid in self.getIdentityProviders():
+                logger.debug(f'login: Using IdP {idp_entityid}')
+                saml_req_info = self.getIdPAuthenticationData(
+                                    REQUEST, idp_entityid=idp_entityid)
+            else:
+                msg = f'login: Invalid identity provider {idp_entityid}'
+                logger.error(msg)
+                raise ValueError(msg)
+        else:
+            logger.debug('login: Using default IdP')
+            saml_req_info = self.getIdPAuthenticationData(REQUEST)
+
+        return self._challenge(saml_req_info, REQUEST.RESPONSE)
 
     #
     # ICredentialsResetPlugin implementation

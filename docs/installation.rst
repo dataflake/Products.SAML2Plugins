@@ -12,6 +12,13 @@ between operating systems:
 - RedHat 9 and derivatives: ``dnf install xmlsec1 xmlsec1-openssl``
 - Ubuntu 22.04: ``apt-get install xmlsec1``
 
+.. note::
+
+    If you need to support newer digest, signature or encryption algorithms
+    make sure to install ``xmlsec1`` version 1.3.0 or higher. For example, the
+    German Elster Identity Provider requires algorithms not supported by
+    earlier versions.
+
 
 Install with ``pip``
 --------------------

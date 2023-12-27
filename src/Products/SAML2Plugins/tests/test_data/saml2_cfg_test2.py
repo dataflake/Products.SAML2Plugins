@@ -25,6 +25,12 @@ CONFIG = {
     },
     "key_file": "./mykey.pem",
     "cert_file": "./mycert.pem",
+    "encryption_keypairs": [
+        {
+            'key_file': './mykey.pem',
+            'cert_file': './mycert.pem',
+        },
+    ],
     "xmlsec_binary": "/usr/local/bin/xmlsec1",
     "delete_tmpfiles": True,
     "metadata": {

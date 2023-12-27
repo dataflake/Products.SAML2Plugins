@@ -6,8 +6,8 @@
    :target: https://coveralls.io/github/dataflake/Products.SAML2Plugins
    :alt: Test coverage
 
-.. image:: https://readthedocs.org/projects/productsldapmultiplugins/badge/?version=latest
-   :target: https://productsldapmultiplugins.readthedocs.io
+.. image:: https://readthedocs.org/projects/saml2plugins/badge/?version=latest
+   :target: https://saml2plugins.readthedocs.io
    :alt: Documentation Status
 
 .. image:: https://img.shields.io/pypi/v/Products.SAML2Plugins.svg

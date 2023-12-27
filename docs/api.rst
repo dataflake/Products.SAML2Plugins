@@ -1,7 +1,7 @@
 .. _api_interfaces_section:
 
-Interfaces
-----------
+Implemented PluggableAuthService Interfaces
+-------------------------------------------
 
 The :term:`PluggableAuthService` plugins in this package 
 implement interfaces defined in the :term:`PluggableAuthService`

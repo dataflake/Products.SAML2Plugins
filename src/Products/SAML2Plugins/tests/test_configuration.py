@@ -14,6 +14,7 @@
 """
 
 import os
+from unittest.mock import MagicMock
 
 from .base import TEST_CONFIG_FOLDER
 from .base import PluginTestCase
@@ -166,7 +167,9 @@ class PySAML2ConfigurationTests(PluginTestCase):
 
         expected_faulty_keys = ('cert_file', 'key_file', 'xmlsec_binary',
                                 'local', 'cert', 'attribute_maps',
-                                'organization')
+                                'organization',
+                                'key_file (encryption_keypairs)',
+                                'cert_file (encryption_keypairs)')
         faulty_keys = [x['key'] for x in plugin.getConfigurationErrors()]
         self.assertEqual(set(expected_faulty_keys), set(faulty_keys))
 
@@ -200,6 +203,20 @@ class PySAML2ConfigurationTests(PluginTestCase):
         plugin._configuration = cfg_dict
         faulty_keys = [x['key'] for x in plugin.getConfigurationErrors()]
         self.assertNotIn('cert_file', faulty_keys)
+
+        self.assertIn('key_file (encryption_keypairs)', faulty_keys)
+        key_file = os.path.join(TEST_CONFIG_FOLDER, 'saml2plugintest.key')
+        cfg_dict['encryption_keypairs'][0]['key_file'] = key_file
+        plugin._configuration = cfg_dict
+        faulty_keys = [x['key'] for x in plugin.getConfigurationErrors()]
+        self.assertNotIn('key_file (encryption_keypairs)', faulty_keys)
+
+        self.assertIn('cert_file (encryption_keypairs)', faulty_keys)
+        cert_file = os.path.join(TEST_CONFIG_FOLDER, 'saml2plugintest.pem')
+        cfg_dict['encryption_keypairs'][0]['cert_file'] = cert_file
+        plugin._configuration = cfg_dict
+        faulty_keys = [x['key'] for x in plugin.getConfigurationErrors()]
+        self.assertNotIn('cert_file (encryption_keypairs)', faulty_keys)
 
         self.assertIn('xmlsec_binary', faulty_keys)
         xmlsec_binary = os.path.join(TEST_CONFIG_FOLDER, 'dummy_xmlsec1')
@@ -272,3 +289,8 @@ class PySAML2ConfigurationTests(PluginTestCase):
         # gets returned.
         attr_maps = plugin.getAttributeMaps()
         self.assertIsInstance(attr_maps, tuple)
+        self.assertTrue(attr_maps)
+
+        # Make sure configuration failures don't propagate
+        plugin.getPySAML2Configuration = MagicMock(return_value=None)
+        self.assertEqual(plugin.getAttributeMaps(), ())

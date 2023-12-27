@@ -133,7 +133,14 @@ class SAML2PluginBaseTests:
         self._create_valid_configuration(plugin)
 
         self.assertEqual(plugin.getIdentityProviders(),
-                         ['https://saml.example.com/entityid'])
+                         ('https://saml.example.com/entityid',))
+
+        # Don't blow up if no identity provider metadata exists
+        cfg = plugin.getConfiguration()
+        del cfg['metadata']
+        clearConfigurationCaches()
+        plugin._configuration = cfg
+        self.assertEqual(plugin.getIdentityProviders(), ())
 
     def test_authenticateCredentials(self):
         plugin = self._makeOne('test1')
@@ -154,36 +161,6 @@ class SAML2PluginBaseTests:
         creds = {'login': 'testuser', 'plugin_uid': plugin._uid}
         self.assertEqual(plugin.authenticateCredentials(creds),
                          ('testuser', 'testuser'))
-
-#    def test_getLoginURL(self):
-#        plugin = self._makeOne('test1')
-#        self._create_valid_configuration(plugin)
-#        req = DummyRequest()
-#        idp_url = 'https://idp/login?SAMLRequest=XXX'
-#        plugin.getIdPAuthenticationURL = MagicMock(return_value=idp_url)
-#
-#        # No information in the request yet
-#        self.assertEqual(plugin.getLoginURL(req), idp_url)
-#
-#        # Add information about a requested URL
-#        url = 'https://samltext.example.com/foo/bar.html'
-#        req.set('ACTUAL_URL', url)
-#        self.assertEqual(plugin.getLoginURL(req),
-#                         f'{idp_url}&RelayState={urllib.parse.quote(url)}')
-#
-#        # Add a query string
-#        query_string = 'key1=val1&key2=val2'
-#        req.set('QUERY_STRING', query_string)
-#        url = f'{url}?{query_string}'
-#        self.assertEqual(plugin.getLoginURL(req),
-#                         f'{idp_url}&RelayState={urllib.parse.quote(url)}')
-#
-#        # came_from overrides everything else
-#        came_from = 'https://host/path/page.html?key1=val1'
-#        req.set('came_from', came_from)
-#        self.assertEqual(
-#            plugin.getLoginURL(req),
-#            f'{idp_url}&RelayState={urllib.parse.quote(came_from)}')
 
     def test_challenge_binding_redirect(self):
         plugin = self._makeOne('test1')
@@ -251,6 +228,114 @@ class SAML2PluginBaseTests:
         full_url = f'{return_url}?{query_string}'
         req.set('QUERY_STRING', query_string)
         self.assertTrue(plugin.challenge(req, response))
+        self.assertFalse(response.locked)
+        self.assertFalse(response.status)
+        self.assertIn('<input type="hidden" name="SAMLRequest"', response.body)
+        self.assertIn(
+            f'<input type="hidden" name="RelayState" value="{full_url}"/>',
+            response.body)
+
+    def test_login_binding_redirect(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+        req = DummyRequest()
+        response = req.RESPONSE
+
+        # Empty request
+        plugin.login(req)
+        self.assertTrue(response.locked)
+        self.assertEqual(response.status, 303)
+        self.assertIn('SAMLRequest=', response.redirected)
+        self.assertNotIn('RelayState', response.redirected)
+
+        # Set a return URL
+        return_url = 'https://foo'
+        req.set('ACTUAL_URL', return_url)
+        plugin.login(req)
+        self.assertTrue(response.locked)
+        self.assertEqual(response.status, 303)
+        self.assertIn('SAMLRequest=', response.redirected)
+        self.assertIn(f'RelayState={urllib.parse.quote(return_url, safe="")}',
+                      response.redirected)
+
+        # Set a return URL and a query string
+        query_string = 'came_from=/foo/bar'
+        full_url = f'{return_url}?{query_string}'
+        req.set('QUERY_STRING', query_string)
+        plugin.login(req)
+        self.assertTrue(response.locked)
+        self.assertEqual(response.status, 303)
+        self.assertIn('SAMLRequest=', response.redirected)
+        self.assertIn(f'RelayState={urllib.parse.quote(full_url, safe="")}',
+                      response.redirected)
+
+        # Set an invalid identity provider, will raise an exception
+        req.set('idp', urllib.parse.quote('https://invalid'))
+        with self.assertRaises(ValueError) as context:
+            plugin.login(req)
+        self.assertEqual(str(context.exception),
+                         'login: Invalid identity provider https://invalid')
+
+        # Set a valid IdP
+        idp = plugin.getIdentityProviders()[0]
+        req.set('idp', urllib.parse.quote(idp))
+        plugin.login(req)
+        self.assertTrue(response.locked)
+        self.assertEqual(response.status, 303)
+        self.assertIn('SAMLRequest=', response.redirected)
+        self.assertIn(f'RelayState={urllib.parse.quote(full_url, safe="")}',
+                      response.redirected)
+
+    def test_login_binding_post(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+        post_idp_cfg = self._test_path('mocksaml_metadata_binding_post.xml')
+        plugin._configuration['metadata']['local'] = [post_idp_cfg]
+        req = DummyRequest()
+        response = req.RESPONSE
+
+        # Empty request
+        plugin.login(req)
+        self.assertFalse(response.locked)
+        self.assertFalse(response.status)
+        self.assertIn('<input type="hidden" name="SAMLRequest"', response.body)
+        self.assertNotIn('<input type="hidden" name="RelayState"',
+                         response.body)
+
+        # Set a return URL
+        return_url = 'https://foo'
+        req.set('ACTUAL_URL', return_url)
+        plugin.login(req)
+        self.assertFalse(response.locked)
+        self.assertFalse(response.status)
+        self.assertIn('<input type="hidden" name="SAMLRequest"', response.body)
+        self.assertIn(
+            f'<input type="hidden" name="RelayState" value="{return_url}"/>',
+            response.body)
+
+        # Set a return URL and a query string
+        query_string = 'came_from=/foo/bar'
+        full_url = f'{return_url}?{query_string}'
+        req.set('QUERY_STRING', query_string)
+        plugin.login(req)
+        self.assertFalse(response.locked)
+        self.assertFalse(response.status)
+        self.assertIn('<input type="hidden" name="SAMLRequest"', response.body)
+        self.assertIn(
+            f'<input type="hidden" name="RelayState" value="{full_url}"/>',
+            response.body)
+
+        # Set an invalid identity provider, will raise an exception
+        req.set('idp', urllib.parse.quote('https://invalid'))
+        with self.assertRaises(ValueError) as context:
+            plugin.login(req)
+        self.assertEqual(str(context.exception),
+                         'login: Invalid identity provider https://invalid')
+
+        # Set a valid IdP
+        idp = plugin.getIdentityProviders()[0]
+        req.set('idp', urllib.parse.quote(idp))
+        plugin.login(req)
         self.assertFalse(response.locked)
         self.assertFalse(response.status)
         self.assertIn('<input type="hidden" name="SAMLRequest"', response.body)
