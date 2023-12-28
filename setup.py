@@ -23,7 +23,7 @@ def read(name):
 
 
 setup(name='Products.SAML2Plugins',
-      version='0.9',
+      version='1.0.dev0',
       description='SAML 2.0 plugins for the Zope PluggableAuthService',
       long_description=read('README.rst'),
       classifiers=[
