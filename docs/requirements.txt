@@ -1,4 +1,2 @@
 sphinx>5
-pkginfo
-repoze.sphinx.autointerface
-Products.PluggableAuthService
+.[docs]
