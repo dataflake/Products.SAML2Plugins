@@ -23,11 +23,11 @@ def read(name):
 
 
 setup(name='Products.SAML2Plugins',
-      version='0.1.dev0',
+      version='0.9',
       description='SAML 2.0 plugins for the Zope PluggableAuthService',
       long_description=read('README.rst'),
       classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 4 - Beta",
         "Framework :: Zope",
         "Framework :: Zope :: 5",
         "Intended Audience :: Developers",
@@ -50,7 +50,7 @@ setup(name='Products.SAML2Plugins',
       author_email="jens@dataflake.org",
       url='https://github.com/dataflake/Products.SAML2Plugins',
       project_urls={
-        'Documentation': 'https://productssaml2plugins.readthedocs.io/',
+        'Documentation': 'https://saml2plugins.readthedocs.io/',
         'Issue Tracker': ('https://github.com/dataflake/'
                           'Products.SAML2Plugins/issues'),
         'Sources': 'https://github.com/dataflake/Products.SAML2Plugins',
