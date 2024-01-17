@@ -16,4 +16,11 @@
     permission="zope.Public"
     />
 
+  <browser:page
+    for="Products.SAML2Plugins.interfaces.ISAML2Plugin"
+    name="slo"
+    class=".singlelogout.SAML2SingleLogoutView"
+    permission="zope.Public"
+    />
+
 </configure>

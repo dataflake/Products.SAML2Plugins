@@ -54,6 +54,7 @@ class SAML2PluginBase(BasePlugin,
     login_attribute = ''
     assign_roles = []
     inactivity_timeout = 2
+    logout_path = ''
     metadata_valid = 2
     metadata_sign = False
     metadata_envelope = False
@@ -96,6 +97,10 @@ class SAML2PluginBase(BasePlugin,
                      'label': 'Roles for SAML-authenticated users',
                      'type': 'multiple selection',
                      'select_variable': 'getCandidateRoles',
+                     'mode': 'w'},
+                    {'id': 'logout_path',
+                     'label': 'Logout redirect path',
+                     'type': 'string',
                      'mode': 'w'},
                     {'id': 'metadata_valid',
                      'label': 'Metadata validity (hours)',

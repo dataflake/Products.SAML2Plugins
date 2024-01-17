@@ -66,6 +66,39 @@ class SAML2ServiceProvider:
         client = self.getPySAML2Client()
         return client.is_logged_in(name_id_instance)
 
+    @security.public
+    def logout(self, request):
+        """ Logout triggered manually from Zope (e.g. link)
+
+        Args:
+            request (Zope REQUEST object)
+        """
+        session_info = request.SESSION.get(self._uid, None)
+
+        if not session_info:
+            logger.debug('logout: No login session active')
+            return 'logout: No login session active'
+
+        client = self.getPySAML2Client()
+        login = session_info.get('_login', 'n/a')
+        logger.debug(f'logout: Logging out {login}')
+
+        saml_resp_dict = client.global_logout(session_info['name_id'],
+                                              reason='Manual logout')
+        self.resetCredentials(request, request.RESPONSE)
+        # XXX Do something with the response dict
+        if not saml_resp_dict:
+            logger.debug(
+                f'logout: Remote logout {login} FAIL, logging out locally')
+        else:
+            logger.debug(f'logout: Logged out {login} remote and local')
+
+        if self.logout_path:
+            logger.debug(f'logout: Redirecting to {self.logout_path}')
+            self.request.response.redirect(self.logout_path, lock=1)
+        else:
+            return f'Logged out {login}'
+
     @security.private
     def logoutLocally(self, name_id_instance):
         """ Remove a user from the PySAML2 cache
@@ -144,7 +177,8 @@ class SAML2ServiceProvider:
             saml_resp = client.parse_authn_request_response(saml_response,
                                                             saml_binding)
         except Exception as exc:
-            logger.error(f'Parsing SAML response failed:\n{exc}')
+            logger.error(
+                f'handleACSRequest: Parsing SAML response failed:\n{exc}')
             return user_info
 
         if saml_resp is not None:
@@ -186,11 +220,39 @@ class SAML2ServiceProvider:
                 return {}
 
             logger.debug(
-                'handleACSRequest: Got data for {user_info["_login"]}')
+                f'handleACSRequest: Got data for {user_info["_login"]}')
         else:
             logger.debug('handleACSRequest: Invalid SamlResponse, no user')
 
         return user_info
+
+    @security.private
+    def handleSLORequest(self, saml_response, binding='POST'):
+        """ Handle incoming SAML 2.0 logout request or response """
+        client = self.getPySAML2Client()
+        target_path = self.logout_path or ''
+
+        if binding == 'POST':
+            saml_binding = BINDING_HTTP_POST
+        else:
+            saml_binding = BINDING_HTTP_REDIRECT
+
+        try:
+            saml_resp = client.parse_logout_request_response(saml_response,
+                                                             saml_binding)
+        except Exception as exc:
+            logger.error(
+                f'handleSLORequest: Parsing SAML response failed:\n{exc}')
+            raise
+
+        if saml_resp is not None:
+            # XXX Do something with the response data?
+            logger.debug(
+                'handleSLORequest: Got data for "XXX"')
+        else:
+            logger.debug('handleSLORequest: Invalid SamlResponse')
+
+        return target_path
 
 
 InitializeClass(SAML2ServiceProvider)

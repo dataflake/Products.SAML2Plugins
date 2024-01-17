@@ -150,6 +150,10 @@ tab:
   rights to these users. The selection list presents roles known to Zope in the
   place where the user folder was instantiated. All roles you select here will
   be given to users authenticated by this SAML 2.0 plugin.
+- `Logout redirect path`: If you enter the path to a page in Zope here, the
+  user will be redirected to that page when using the logout functionality.
+  The page must be publicly visible because the user will be logged out at that
+  moment, otherwise they will be prompted for authentication again.
 - `Metadata validity`: The SAML 2.0 plugin automatically creates XML metadata
   that describe how to interact with it from the :term:`pysaml2` configuration.
   The `Metadata validity` is the number of hours the identity provider should
