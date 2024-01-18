@@ -293,11 +293,13 @@ class SAML2ServiceProvider:
                 f'handleSLORequest: Parsing SAML response failed:\n{exc}')
 
         if saml_resp is not None:
-            # XXX Do something with the response data?
-            logger.debug(
-                'handleSLORequest: Got data for "XXX"')
+            try:
+                saml_resp.status_ok() and \
+                    logger.debug('handleSLORequest: Remote logout success')
+            except Exception as exc:
+                logger.debug(f'handleSLORequest: Remote logout FAIL:\n{exc}')
         else:
-            logger.debug('handleSLORequest: Invalid SamlResponse')
+            logger.debug('handleSLORequest: Failure, got no SAML response')
 
         return target_path
 

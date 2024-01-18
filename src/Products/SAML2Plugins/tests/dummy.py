@@ -120,10 +120,11 @@ class DummyPySAML2Client:
 
 class DummySAMLResponse:
 
-    def __init__(self, subject=None, issuer='', identity={}):
+    def __init__(self, subject=None, issuer='', identity={}, status='ok'):
         self._subject = subject
         self._issuer = issuer
         self._identity = identity
+        self._status = status
 
     def get_subject(self):
         return self._subject
@@ -133,3 +134,8 @@ class DummySAMLResponse:
 
     def get_identity(self):
         return self._identity
+
+    def status_ok(self):
+        if self._status =='raise_error':
+            raise Exception('STATUS FAIL')
+        return bool(self._status)

@@ -314,11 +314,20 @@ class SAML2ServiceProviderTests(PluginTestCase):
                          '/logged_out')
 
         # Provide some data
-        saml_response = 'Some Response'
+        saml_response = DummySAMLResponse(status='ok')
         dummy_client = DummyPySAML2Client(parse_result=saml_response)
         plugin.getPySAML2Client = MagicMock(return_value=dummy_client)
 
         # Internal processing works, but outcome is the same as before
+        self.assertEqual(plugin.handleSLORequest(''), '/logged_out')
+        self.assertEqual(plugin.handleSLORequest('', binding='redirect'),
+                         '/logged_out')
+
+        # Make the SAML response fail validation
+        # Errors don't propagate, so the result is the same
+        saml_response = DummySAMLResponse(status='raise_error')
+        dummy_client = DummyPySAML2Client(parse_result=saml_response)
+        plugin.getPySAML2Client = MagicMock(return_value=dummy_client)
         self.assertEqual(plugin.handleSLORequest(''), '/logged_out')
         self.assertEqual(plugin.handleSLORequest('', binding='redirect'),
                          '/logged_out')
