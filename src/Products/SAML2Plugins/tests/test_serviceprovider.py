@@ -54,29 +54,101 @@ class SAML2ServiceProviderTests(PluginTestCase):
 
     def test_isLoggedIn(self):
         plugin = self._makeOne()
-        name_id = DummyNameId('testid')
+        dummy_name_id = DummyNameId('testid')
+        name_id_str = str(dummy_name_id)
+        name_id = dummy_name_id.to_saml2_nameid()
         dummy_client = DummyPySAML2Client()
 
         # User is not logged in
         self.assertFalse(plugin.isLoggedIn(name_id))
+        self.assertFalse(plugin.isLoggedIn(name_id_str))
 
         # Mock out a logged in user
         plugin.getPySAML2Client = MagicMock(return_value=dummy_client)
         dummy_client._store_name_id(name_id)
         self.assertTrue(plugin.isLoggedIn(name_id))
+        self.assertTrue(plugin.isLoggedIn(name_id_str))
 
-    def test_logoutLocally(self):
+    def test_logout(self):
         plugin = self._makeOne()
-        name_id = DummyNameId('testid')
+        req = DummyRequest()
+        dummy_name_id = DummyNameId('testid')
+        name_id_str = str(dummy_name_id)
+        name_id = dummy_name_id.to_saml2_nameid()
         dummy_client = DummyPySAML2Client()
 
-        # User is not logged in, call doesn't raise errors
-        self.assertIsNone(plugin.logoutLocally(name_id))
+        # Empty request, no session
+        self.assertEqual(plugin.logout(req),
+                         'logout: No login session active')
+
+        # Empty session
+        req.SESSION.set(plugin._uid, {})
+        self.assertEqual(plugin.logout(req),
+                         'logout: No login session active')
+
+        # Add some data into the session
+        session_data = {'_login': 'testuser1'}
+        req.SESSION.set(plugin._uid, session_data)
+        self.assertEqual(plugin.logout(req),
+                         'logout: No login session active')
+
+        # Complete session data. The user is not logged in.
+        session_data['name_id'] = name_id_str
+        req.SESSION.set(plugin._uid, session_data)
+        self.assertEqual(plugin.logout(req), 'Logged out')
 
         # Mock out a logged in user
         plugin.getPySAML2Client = MagicMock(return_value=dummy_client)
         dummy_client._store_name_id(name_id)
+        req.SESSION.set(plugin._uid, session_data)
+
+        # The PySAML2 client fails during logout - user is logged out locally
+        self.assertEqual(plugin.logout(req), 'Logged out')
+        self.assertFalse(req.RESPONSE.redirected)  # No logout path set yet
+
+        # Add user again and set logout path
+        dummy_client._store_name_id(name_id)
+        req.SESSION.set(plugin._uid, session_data)
+        plugin.logout_path = '/logged_out'
+        self.assertIsNone(plugin.logout(req))
+        self.assertEqual(req.RESPONSE.redirected, '/logged_out')
+
+        # Setting a return value for the PySAML2 client logout result
+        dummy_client._store_name_id(name_id)
+        req.SESSION.set(plugin._uid, session_data)
+        res = {'https://saml.test':
+               ('POST BINDING',
+                {'headers': (('Content-Type', 'text/html'),),
+                 'data': 'Data Payload'})}
+        dummy_client._set_global_logout_result(res)
+        self.assertEqual(plugin.logout(req), 'Data Payload')
+
+    def test_logoutLocally(self):
+        plugin = self._makeOne()
+        dummy_name_id = DummyNameId('testid')
+        name_id_str = str(dummy_name_id)
+        name_id = dummy_name_id.to_saml2_nameid()
+        dummy_client = DummyPySAML2Client()
+
+        # User is not logged in, call doesn't raise errors
         self.assertIsNone(plugin.logoutLocally(name_id))
+        self.assertIsNone(plugin.logoutLocally(name_id_str))
+
+        # Mock out a logged in user
+        plugin.getPySAML2Client = MagicMock(return_value=dummy_client)
+        dummy_client._store_name_id(name_id)
+        self.assertTrue(plugin.isLoggedIn(name_id))
+        self.assertTrue(plugin.isLoggedIn(name_id_str))
+        plugin.logoutLocally(name_id)
+        self.assertFalse(plugin.isLoggedIn(name_id))
+        self.assertFalse(plugin.isLoggedIn(name_id_str))
+
+        dummy_client._store_name_id(name_id)
+        self.assertTrue(plugin.isLoggedIn(name_id))
+        self.assertTrue(plugin.isLoggedIn(name_id_str))
+        plugin.logoutLocally(name_id_str)
+        self.assertFalse(plugin.isLoggedIn(name_id))
+        self.assertFalse(plugin.isLoggedIn(name_id_str))
 
     def test_getIdPAuthenticationData_binding_redirect(self):
         plugin = self._makeOne()
@@ -227,3 +299,34 @@ class SAML2ServiceProviderTests(PluginTestCase):
         failing_client = DummyPySAML2Client(parse_result='raise_error')
         plugin.getPySAML2Client = MagicMock(return_value=failing_client)
         self.assertEqual(plugin.handleACSRequest(saml_response), {})
+
+    def test_handleSLORequest(self):
+        plugin = self._makeOne()
+
+        # Empty SAML response
+        self.assertEqual(plugin.handleSLORequest(''), '')
+        self.assertEqual(plugin.handleSLORequest('', binding='redirect'), '')
+
+        # Set logout path
+        plugin.logout_path = '/logged_out'
+        self.assertEqual(plugin.handleSLORequest(''), '/logged_out')
+        self.assertEqual(plugin.handleSLORequest('', binding='redirect'),
+                         '/logged_out')
+
+        # Provide some data
+        saml_response = 'Some Response'
+        dummy_client = DummyPySAML2Client(parse_result=saml_response)
+        plugin.getPySAML2Client = MagicMock(return_value=dummy_client)
+
+        # Internal processing works, but outcome is the same as before
+        self.assertEqual(plugin.handleSLORequest(''), '/logged_out')
+        self.assertEqual(plugin.handleSLORequest('', binding='redirect'),
+                         '/logged_out')
+
+        # Act like the PySAML2 response processing blew up
+        # The exception should not bubble up
+        failing_client = DummyPySAML2Client(parse_result='raise_error')
+        plugin.getPySAML2Client = MagicMock(return_value=failing_client)
+        self.assertEqual(plugin.handleSLORequest(''), '/logged_out')
+        self.assertEqual(plugin.handleSLORequest('', binding='redirect'),
+                         '/logged_out')

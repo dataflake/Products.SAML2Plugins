@@ -13,6 +13,8 @@
 """ Dummy fixture classes for SAML2 plugin test classes
 """
 
+from saml2.ident import decode as str_to_nameid
+
 
 class DummySession(dict):
 
@@ -75,7 +77,12 @@ class DummyNameId:
         self.text = name
 
     def __str__(self):
-        return f'<DummyNameId {self.text}>'
+        return (f'0={self.name_qualifier},1={self.sp_name_qualifier},'
+                f'2={self.format},3={self.sp_provided_id},4={self.text}')
+
+    def to_saml2_nameid(self):
+        # Convert to a "real" PySAML2 NameID instance
+        return str_to_nameid(str(self))
 
 
 class DummyPySAML2Client:
@@ -83,17 +90,29 @@ class DummyPySAML2Client:
     def __init__(self, parse_result=None):
         self.users = {}
         self.parse_result = parse_result
+        self.global_logout_result = {}
 
     def _store_name_id(self, name_id):
         self.users[str(name_id)] = True
 
+    def _set_global_logout_result(self, result):
+        self.global_logout_result = result
+
     def is_logged_in(self, name_id):
         return bool(self.users.get(str(name_id)))
+
+    def global_logout(self, name_id, *args, **kw):
+        return self.global_logout_result
 
     def local_logout(self, name_id):
         del self.users[str(name_id)]
 
     def parse_authn_request_response(self, saml_response, binding):
+        if self.parse_result == 'raise_error':
+            raise Exception('PARSE FAILURE')
+        return self.parse_result
+
+    def parse_logout_request_response(self, saml_response, binding):
         if self.parse_result == 'raise_error':
             raise Exception('PARSE FAILURE')
         return self.parse_result

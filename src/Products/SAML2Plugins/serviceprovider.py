@@ -20,6 +20,8 @@ from saml2 import BINDING_HTTP_POST
 from saml2 import BINDING_HTTP_REDIRECT
 from saml2.cache import Cache
 from saml2.client import Saml2Client
+from saml2.ident import code as nameid_to_str
+from saml2.ident import decode as str_to_nameid
 
 from AccessControl import ClassSecurityInfo
 from AccessControl.class_init import InitializeClass
@@ -53,63 +55,108 @@ class SAML2ServiceProvider:
         return self._v_saml2client
 
     @security.private
-    def isLoggedIn(self, name_id_instance):
+    def isLoggedIn(self, name_id):
         """ Is the user in the PySAML2 cache?
 
         Args:
-            name_id_instance (saml2.saml.NameID): The NameID instance
-                corresponding to the user
+            name_id (saml2.saml.NameID or str): The NameID instance
+                corresponding to the user or a sring representing it.
 
         Returns:
             True or False
         """
+        if isinstance(name_id, str):
+            name_id = str_to_nameid(name_id)
         client = self.getPySAML2Client()
-        return client.is_logged_in(name_id_instance)
+        return client.is_logged_in(name_id)
 
     @security.public
-    def logout(self, request):
+    def logout(self, REQUEST):
         """ Logout triggered manually from Zope (e.g. link)
 
         Args:
-            request (Zope REQUEST object)
+            REQUEST (Zope REQUEST object): Zope will provide this parameter
+                automatically when invoking this method through the web.
         """
-        session_info = request.SESSION.get(self._uid, None)
+        session_info = REQUEST.SESSION.get(self._uid, None)
 
         if not session_info:
             logger.debug('logout: No login session active')
             return 'logout: No login session active'
 
-        client = self.getPySAML2Client()
+        if not session_info.get('name_id', None):
+            logger.debug('logout: No NameID in session')
+            return 'logout: No login session active'
+
         login = session_info.get('_login', 'n/a')
-        logger.debug(f'logout: Logging out {login}')
 
-        saml_resp_dict = client.global_logout(session_info['name_id'],
-                                              reason='Manual logout')
-        self.resetCredentials(request, request.RESPONSE)
-        # XXX Do something with the response dict
+        if not self.isLoggedIn(session_info['name_id']):
+            logger.debug(f'logout: User {login} is not logged into SAML')
+            saml_resp_dict = {}
+        else:
+            client = self.getPySAML2Client()
+            logger.debug(f'logout: Logging out {login}')
+
+            saml_resp_dict = client.global_logout(
+                                str_to_nameid(session_info['name_id']),
+                                reason='Manual logout')
+        # The response is a dictionary where the keys are Identity Provider
+        # entity IDs and the values are two-element tuples. The first element
+        # is the binding type and the second element is a dictionary with
+        # information about constructing a logout request to the Identity
+        # Provider.
         if not saml_resp_dict:
-            logger.debug(
-                f'logout: Remote logout {login} FAIL, logging out locally')
-        else:
-            logger.debug(f'logout: Logged out {login} remote and local')
+            logger.warning(
+                f'logout: No SAML logout data for {login}, '
+                'logging out locally only')
+            self.resetCredentials(REQUEST, REQUEST.RESPONSE)
 
-        if self.logout_path:
-            logger.debug(f'logout: Redirecting to {self.logout_path}')
-            self.request.response.redirect(self.logout_path, lock=1)
+            if self.logout_path:
+                logger.debug(f'logout: Redirecting to {self.logout_path}')
+                REQUEST.RESPONSE.redirect(self.logout_path, lock=1)
+            else:
+                return 'Logged out'
         else:
-            return f'Logged out {login}'
+            # Assumption: Each unique login is handled by exactly
+            # one Identity Provider.
+            idp_entity_id = list(saml_resp_dict.keys())[0]
+            binding, saml_request_info = saml_resp_dict[idp_entity_id]
+            logger.debug(
+                f'logout: Initiating logout at {idp_entity_id}')
+            return self.idpCommunicate(saml_request_info, REQUEST.RESPONSE)
 
     @security.private
-    def logoutLocally(self, name_id_instance):
+    def idpCommunicate(self, saml_request_info, response):
+        """ Communicate with the Identity Provider
+
+        Handles redirecting or POSTing to the identity provider
+        """
+        headers = dict(saml_request_info['headers'])
+        if 'Location' in headers:
+            logger.debug('idpCommunicate: Redirecting to Identity Provider')
+            response.redirect(headers['Location'],
+                              status=saml_request_info.get('status', 303),
+                              lock=1)
+        else:
+            logger.debug('idpCommunicate: POSTing to Identity Provider')
+            for key, value in headers.items():
+                response.setHeader(key, value)
+            response.setBody(saml_request_info['data'])
+            return saml_request_info['data']
+
+    @security.private
+    def logoutLocally(self, name_id):
         """ Remove a user from the PySAML2 cache
 
         Args:
-            name_id_instance (saml2.saml.NameID): The NameID instance
-                corresponding to the user
+            name_id (saml2.saml.NameID or str): The NameID instance
+                corresponding to the user or a string representing it.
         """
+        if isinstance(name_id, str):
+            name_id = str_to_nameid(name_id)
         client = self.getPySAML2Client()
-        if client.is_logged_in(name_id_instance):
-            client.local_logout(name_id_instance)
+        if client.is_logged_in(name_id):
+            client.local_logout(name_id)
 
     @security.private
     def getDefaultIdPEntityID(self):
@@ -188,7 +235,7 @@ class SAML2ServiceProvider:
             # saml_resp.ava: contains result of saml_resp.get_identity()
             # saml_resp.session_info(): user attributes plus session info
             name_id_object = saml_resp.get_subject()
-            user_info['name_id'] = str(name_id_object)
+            user_info['name_id'] = nameid_to_str(name_id_object)
             user_info['issuer'] = saml_resp.issuer()
 
             if not self.login_attribute:
@@ -241,9 +288,9 @@ class SAML2ServiceProvider:
             saml_resp = client.parse_logout_request_response(saml_response,
                                                              saml_binding)
         except Exception as exc:
+            saml_resp = None
             logger.error(
                 f'handleSLORequest: Parsing SAML response failed:\n{exc}')
-            raise
 
         if saml_resp is not None:
             # XXX Do something with the response data?

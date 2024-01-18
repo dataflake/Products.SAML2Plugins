@@ -28,6 +28,7 @@ class SAML2SingleLogoutView(BrowserView):
         """ Interact with request from the SAML 2.0 Identity Provider (IdP) """
         saml_response = self.request.get('SAMLResponse', '')
         binding = 'REDIRECT'
+        result = 'Logged out'
 
         if self.request.method == 'POST':
             binding = 'POST'
@@ -35,7 +36,8 @@ class SAML2SingleLogoutView(BrowserView):
         try:
             logout_path = self.context.handleSLORequest(saml_response, binding)
         except Exception:
-            return 'Logout failed'
+            result = 'Logout failed'
+            logout_path = ''
 
         # Clear local credentials
         self.context.resetCredentials(self.request, self.request.RESPONSE)
@@ -44,4 +46,4 @@ class SAML2SingleLogoutView(BrowserView):
             logger.debug(f'SLO view: Success, redirecting to {logout_path}')
             self.request.response.redirect(logout_path, lock=1)
         else:
-            return 'Logged out'
+            return result

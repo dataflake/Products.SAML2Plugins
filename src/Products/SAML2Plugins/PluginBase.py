@@ -200,28 +200,8 @@ class SAML2PluginBase(BasePlugin,
 
         Challenge the user for credentials.
         """
-        self._challenge(self.getIdPAuthenticationData(request), response)
-
+        self.idpCommunicate(self.getIdPAuthenticationData(request), response)
         return True
-
-    @security.private
-    def _challenge(self, saml_request_info, response):
-        """ Factored-out challenge mechanism decision
-
-        Handles redirecting or POSTing to the identity provider
-        """
-        headers = dict(saml_request_info['headers'])
-
-        if 'Location' in headers:
-            logger.debug('challenge: Redirecting for SAML 2 login')
-            response.redirect(headers['Location'],
-                              status=saml_request_info.get('status', 303),
-                              lock=1)
-        else:
-            logger.debug('challenge: POST request for SAML 2 login')
-            for key, value in headers.items():
-                response.setHeader(key, value)
-            response.setBody(saml_request_info['data'])
 
     @security.public
     def login(self, REQUEST):
@@ -250,7 +230,7 @@ class SAML2PluginBase(BasePlugin,
             logger.debug('login: Using default IdP')
             saml_req_info = self.getIdPAuthenticationData(REQUEST)
 
-        return self._challenge(saml_req_info, REQUEST.RESPONSE)
+        return self.idpCommunicate(saml_req_info, REQUEST.RESPONSE)
 
     #
     # ICredentialsResetPlugin implementation
