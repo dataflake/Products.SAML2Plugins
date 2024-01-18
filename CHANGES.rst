@@ -4,6 +4,9 @@ Change log
 1.0 (unreleased)
 ----------------
 
+- Fix ZMI views failing with bad PySAML2 configurations
+  (`#1 <https://github.com/dataflake/Products.SAML2Plugins/issues/1>`_)
+
 - Added support for the SAML 2.0 Single Logout Service
 
 - Removed support for Python 3.7 and 3.8:

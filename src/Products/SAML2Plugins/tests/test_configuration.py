@@ -139,7 +139,8 @@ class PySAML2ConfigurationTests(PluginTestCase):
         self._create_valid_configuration(plugin)
         self.assertIn('sp', plugin.getConfigurationZMIRepresentation())
 
-    def test_getPySAML2Configuration(self):
+    def test_getPySAML2Configuration_function(self):
+        # Test the module function
         from ..configuration import getPySAML2Configuration
         from ..configuration import setPySAML2Configuration
 
@@ -156,6 +157,20 @@ class PySAML2ConfigurationTests(PluginTestCase):
 
         # Cleanup
         setPySAML2Configuration(plugin._uid, old_cfg)
+
+    def test_getPySAML2Configuration(self):
+        # Test the plugin method
+        plugin = self._makeOne('valid')
+        plugin._configuration_folder = TEST_CONFIG_FOLDER
+
+        # Grab a valid configuration
+        plugin._uid = 'valid'
+        self.assertTrue(plugin.getPySAML2Configuration())
+
+        # invalid configuration
+        plugin._configuration = None
+        plugin._uid = 'test2'
+        self.assertIsNone(plugin.getPySAML2Configuration())
 
     def test_getConfigurationErrors(self):
         plugin = self._makeOne('test2')

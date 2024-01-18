@@ -306,10 +306,15 @@ class PySAML2ConfigurationSupport:
 
         if cfg is None:
             cfg = Config()
-            cfg.load(copy.deepcopy(self.getConfiguration()))
-            setPySAML2Configuration(self._uid, cfg)
-            logger.debug(
-                'getPySAML2Configuration: Created pysaml2 configuration')
+            try:
+                cfg.load(copy.deepcopy(self.getConfiguration()))
+                setPySAML2Configuration(self._uid, cfg)
+                logger.debug(
+                    'getPySAML2Configuration: Created pysaml2 configuration')
+            except Exception as exc:
+                logger.debug(
+                    f'getPySAML2Configuration: Invalid configuration\n{exc}')
+                return None
 
         return cfg
 
