@@ -136,6 +136,6 @@ class DummySAMLResponse:
         return self._identity
 
     def status_ok(self):
-        if self._status =='raise_error':
+        if self._status == 'raise_error':
             raise Exception('STATUS FAIL')
         return bool(self._status)
