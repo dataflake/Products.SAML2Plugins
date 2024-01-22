@@ -130,6 +130,8 @@ tab:
 - `Plugin unique ID (read-only)`: The plugin's unique ID, which determines the
   configuration file name for the main :term:`pysaml2` configuration file (see
   above).
+- `Title (optional)`: An optional title for the plugin instance, which is
+  visible in the :term:`ZMI`.
 - `Default Identity Provider`: The selection list will show all identity
   providers that have been configured using the :term:`pysaml2` configuration
   key `metadata`. The identity provider you select here will be chosen by
@@ -154,10 +156,6 @@ tab:
   user will be redirected to that page when using the logout functionality.
   The page must be publicly visible because the user will be logged out at that
   moment, otherwise they will be prompted for authentication again.
-- `Metadata validity`: The SAML 2.0 plugin automatically creates XML metadata
-  that describe how to interact with it from the :term:`pysaml2` configuration.
-  The `Metadata validity` is the number of hours the identity provider should
-  consider the metadata valid and not re-load it from the plugin.
 - `Sign metadata`: If this checkbox is selected, the generated XML metadata is
   signed with the signing key from the :term:`pysaml2` ``key_file``
   configuration.
