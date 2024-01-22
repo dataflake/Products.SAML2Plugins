@@ -74,7 +74,7 @@ class SAML2MetadataProvider:
             security_ctx = security_context(pysaml2_conf)
 
             entities, xmldoc = entities_descriptor([entity],
-                                                   self.metadata_valid or 0,
+                                                   entity_cfg.valid_for,
                                                    '',  # name argument
                                                    self._uid,  # id argument
                                                    self.metadata_sign,

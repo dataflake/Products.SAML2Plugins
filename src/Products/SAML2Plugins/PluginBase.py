@@ -55,7 +55,6 @@ class SAML2PluginBase(BasePlugin,
     assign_roles = []
     inactivity_timeout = 2
     logout_path = ''
-    metadata_valid = 2
     metadata_sign = False
     metadata_envelope = False
     protocol = 'http'  # The PAS challenge 'protocol' we use.
@@ -80,6 +79,10 @@ class SAML2PluginBase(BasePlugin,
                      'label': 'Plugin unique ID (read-only)',
                      'type': 'string',
                      'mode': 'r'},
+                    {'id': 'title',
+                     'label': 'Title (optional)',
+                     'type': 'string',
+                     'mode': 'w'},
                     {'id': 'default_idp',
                      'label': 'Default Identity Provider',
                      'type': 'selection',
@@ -101,10 +104,6 @@ class SAML2PluginBase(BasePlugin,
                     {'id': 'logout_path',
                      'label': 'Logout redirect path',
                      'type': 'string',
-                     'mode': 'w'},
-                    {'id': 'metadata_valid',
-                     'label': 'Metadata validity (hours)',
-                     'type': 'int',
                      'mode': 'w'},
                     {'id': 'metadata_sign',
                      'label': 'Sign metadata',

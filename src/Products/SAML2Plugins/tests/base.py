@@ -101,7 +101,6 @@ class SAML2PluginBaseTests:
         self.assertEqual(plugin.title, '')
         self.assertEqual(plugin.default_idp, None)
         self.assertEqual(plugin.login_attribute, '')
-        self.assertEqual(plugin.metadata_valid, 2)
         self.assertFalse(plugin.metadata_sign)
         self.assertFalse(plugin.metadata_envelope)
         self.assertIn('etc', plugin.getConfigurationFolderPath())
