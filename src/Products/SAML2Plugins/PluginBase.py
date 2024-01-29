@@ -22,6 +22,7 @@ import uuid
 from AccessControl import ClassSecurityInfo
 from AccessControl.class_init import InitializeClass
 from AccessControl.Permissions import manage_users
+from AccessControl.SecurityManagement import getSecurityManager
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
 from Products.PluggableAuthService.interfaces.plugins import \
@@ -160,6 +161,16 @@ class SAML2PluginBase(BasePlugin,
             return tuple(sorted(metadata.keys()))
 
         return ()
+
+    @security.public
+    def loggedInHere(self, REQUEST):
+        """ Helper to signal if the authenticated user is from this plugin
+
+        Returns: True or False
+        """
+        user = getSecurityManager().getUser()
+        session_info = REQUEST.SESSION.get(self._uid)
+        return session_info and user.getId() == session_info.get('_login', ())
 
     #
     #   IAuthenticationPlugin implementation

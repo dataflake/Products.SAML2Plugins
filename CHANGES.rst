@@ -4,6 +4,8 @@ Change log
 1.0 (unreleased)
 ----------------
 
+- Add method ``isLoggedInHere`` to see if the current user is from the plugin.
+
 - Use the PySAML2 `valid_until` configuration instead of a custom property
   on the plugin itself to set a metadata timeout value.
 

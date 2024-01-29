@@ -60,7 +60,7 @@ class SAML2ServiceProvider:
 
         Args:
             name_id (saml2.saml.NameID or str): The NameID instance
-                corresponding to the user or a sring representing it.
+                corresponding to the user or a string representing it.
 
         Returns:
             True or False

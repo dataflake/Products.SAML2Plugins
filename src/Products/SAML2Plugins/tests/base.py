@@ -20,6 +20,9 @@ import unittest
 import urllib
 from unittest.mock import MagicMock
 
+from AccessControl.SecurityManagement import newSecurityManager
+from AccessControl.SecurityManagement import noSecurityManager
+
 from ..configuration import clearConfigurationCaches
 from .dummy import DummyNameId
 from .dummy import DummyRequest
@@ -471,3 +474,28 @@ class SAML2PluginBaseTests:
         plugin.assign_roles = ['role1', 'role2']
         self.assertEqual(plugin.getRolesForPrincipal(user, req),
                          ('role1', 'role2'))
+
+    def test_loggedInHere(self):
+        plugin = self._makeOne('test1')
+        self._create_valid_configuration(plugin)
+        req = DummyRequest()
+        session = req.SESSION
+        user = DummyUser('testuser')
+
+        # Empty session and no logged-in user
+        self.assertFalse(plugin.loggedInHere(req))
+
+        # User logged in, but session empty
+        newSecurityManager(None, DummyUser('testuser'))
+        self.assertFalse(plugin.loggedInHere(req))
+
+        # User logged in but session does not match
+        session.set(plugin._uid, {'_login': 'anotheruser'})
+        self.assertFalse(plugin.loggedInHere(req))
+
+        # Put the correct user into the session to make it work
+        session.set(plugin._uid, {'_login': user.getId()})
+        self.assertTrue(plugin.loggedInHere(req))
+
+        # Cleanup
+        noSecurityManager()
