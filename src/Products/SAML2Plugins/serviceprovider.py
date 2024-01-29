@@ -79,6 +79,7 @@ class SAML2ServiceProvider:
                 automatically when invoking this method through the web.
         """
         session_info = REQUEST.SESSION.get(self._uid, None)
+        saml_resp_dict = {}
 
         if not session_info:
             logger.debug('logout: No login session active')
@@ -92,14 +93,23 @@ class SAML2ServiceProvider:
 
         if not self.isLoggedIn(session_info['name_id']):
             logger.debug(f'logout: User {login} is not logged into SAML')
-            saml_resp_dict = {}
         else:
             client = self.getPySAML2Client()
+            md = client.metadata
             logger.debug(f'logout: Logging out {login}')
 
-            saml_resp_dict = client.global_logout(
-                                str_to_nameid(session_info['name_id']),
-                                reason='Manual logout')
+            # Only attempt to call the full SAML logout if the identity
+            # provider offers a single logout service
+            if md.any2('idp', 'single_logout_service', BINDING_HTTP_POST) or \
+               md.any2('idp', 'single_logout_service', BINDING_HTTP_REDIRECT):
+                saml_resp_dict = client.global_logout(
+                                    str_to_nameid(session_info['name_id']),
+                                    reason='Manual logout')
+            else:
+                msg = 'logout: IdP offers no single logout service'
+                logger.debug(msg)
+                return msg
+
         # The response is a dictionary where the keys are Identity Provider
         # entity IDs and the values are two-element tuples. The first element
         # is the binding type and the second element is a dictionary with

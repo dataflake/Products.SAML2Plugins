@@ -4,6 +4,8 @@ Change log
 1.0 (unreleased)
 ----------------
 
+- Check IdP metadata for a configured single logout service before logging out.
+
 - Add method ``isLoggedInHere`` to see if the current user is from the plugin.
 
 - Use the PySAML2 `valid_until` configuration instead of a custom property

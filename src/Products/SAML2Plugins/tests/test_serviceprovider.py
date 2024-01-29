@@ -17,6 +17,7 @@ import time
 import urllib
 from unittest.mock import MagicMock
 
+from saml2 import BINDING_HTTP_POST
 from saml2.cache import Cache
 from saml2.client import Saml2Client
 
@@ -100,6 +101,8 @@ class SAML2ServiceProviderTests(PluginTestCase):
         # Mock out a logged in user
         plugin.getPySAML2Client = MagicMock(return_value=dummy_client)
         dummy_client._store_name_id(name_id)
+        dummy_client.metadata._services = (('single_logout_service',
+                                            BINDING_HTTP_POST),)
         req.SESSION.set(plugin._uid, session_data)
 
         # The PySAML2 client fails during logout - user is logged out locally
@@ -114,13 +117,21 @@ class SAML2ServiceProviderTests(PluginTestCase):
         self.assertEqual(req.RESPONSE.redirected, '/logged_out')
 
         # Setting a return value for the PySAML2 client logout result
+        # but the IdP does not have a single logout service
         dummy_client._store_name_id(name_id)
+        dummy_client.metadata._services = ()
         req.SESSION.set(plugin._uid, session_data)
         res = {'https://saml.test':
                ('POST BINDING',
                 {'headers': (('Content-Type', 'text/html'),),
                  'data': 'Data Payload'})}
         dummy_client._set_global_logout_result(res)
+        self.assertEqual(plugin.logout(req),
+                        'logout: IdP offers no single logout service')
+
+        # Tweaking the client so the IdP has a single logout service
+        dummy_client.metadata._services = (('single_logout_service',
+                                            BINDING_HTTP_POST),)
         self.assertEqual(plugin.logout(req), 'Data Payload')
 
     def test_logoutLocally(self):

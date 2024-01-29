@@ -85,12 +85,22 @@ class DummyNameId:
         return str_to_nameid(str(self))
 
 
+class DummyPySAML2Metadata:
+
+    def __init__(self, services=[]):
+        self._services = services
+
+    def any2(self, typ, service, binding=None):
+        return (service, binding) in self._services
+
+
 class DummyPySAML2Client:
 
-    def __init__(self, parse_result=None):
+    def __init__(self, parse_result=None, services=[]):
         self.users = {}
         self.parse_result = parse_result
         self.global_logout_result = {}
+        self.metadata = DummyPySAML2Metadata(services=services)
 
     def _store_name_id(self, name_id):
         self.users[str(name_id)] = True
