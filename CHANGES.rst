@@ -4,10 +4,6 @@ Change log
 1.0 (unreleased)
 ----------------
 
-- ``resetCredentials`` now triggers a full remote/local logout.
-  This allows the user folder's ``logout`` method to work against
-  multiple SAML 2.0 plugins.
-
 - Use the PySAML2 `valid_until` configuration instead of a custom property
   on the plugin itself to set a metadata timeout value.
 

@@ -109,15 +109,13 @@ class SAML2ServiceProvider:
             logger.warning(
                 f'logout: No SAML logout data for {login}, '
                 'logging out locally only')
-            self.logoutLocally(session_info['name_id'])
-            REQUEST.SESSION.set(self._uid, {})
+            self.resetCredentials(REQUEST, REQUEST.RESPONSE)
 
             if self.logout_path:
                 logger.debug(f'logout: Redirecting to {self.logout_path}')
                 REQUEST.RESPONSE.redirect(self.logout_path, lock=1)
             else:
                 return 'Logged out'
-
         else:
             # Assumption: Each unique login is handled by exactly
             # one Identity Provider.

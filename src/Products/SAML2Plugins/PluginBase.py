@@ -238,8 +238,9 @@ class SAML2PluginBase(BasePlugin,
     def resetCredentials(self, request, response):
         """ See ICredentialsResetPlugin.
 
-        Trigger a full logout that attempts a remote logout at the identity
-        provider and clears locally cached authentication data.
+        Clear out user credentials locally. This logout process does not log
+        the user out of the Identity Provider. It just clears local session
+        information and pysaml2 caches.
 
         Args:
             request (Zope request): The incoming Zope request instance
@@ -250,9 +251,10 @@ class SAML2PluginBase(BasePlugin,
         if session_info:
             login = session_info.get('_login', 'n/a')
             logger.debug(f'resetCredentials: Logging out {login}')
-            self.logout(request)
+            self.logoutLocally(session_info['name_id'])
         else:
             logger.debug('resetCredentials: No login session active')
+        request.SESSION.set(self._uid, {})
 
     #
     # IExtractionPlugin implementation
