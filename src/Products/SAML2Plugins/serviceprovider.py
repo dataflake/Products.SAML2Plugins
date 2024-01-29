@@ -106,9 +106,7 @@ class SAML2ServiceProvider:
                                     str_to_nameid(session_info['name_id']),
                                     reason='Manual logout')
             else:
-                msg = 'logout: IdP offers no single logout service'
-                logger.debug(msg)
-                return msg
+                logger.debug('logout: IdP offers no single logout service')
 
         # The response is a dictionary where the keys are Identity Provider
         # entity IDs and the values are two-element tuples. The first element

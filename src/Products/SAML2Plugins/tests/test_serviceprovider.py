@@ -126,12 +126,14 @@ class SAML2ServiceProviderTests(PluginTestCase):
                 {'headers': (('Content-Type', 'text/html'),),
                  'data': 'Data Payload'})}
         dummy_client._set_global_logout_result(res)
-        self.assertEqual(plugin.logout(req),
-                        'logout: IdP offers no single logout service')
+        self.assertIsNone(plugin.logout(req))
 
         # Tweaking the client so the IdP has a single logout service
+        # and add user again, it was removed in the previous step.
         dummy_client.metadata._services = (('single_logout_service',
                                             BINDING_HTTP_POST),)
+        dummy_client._store_name_id(name_id)
+        req.SESSION.set(plugin._uid, session_data)
         self.assertEqual(plugin.logout(req), 'Data Payload')
 
     def test_logoutLocally(self):
