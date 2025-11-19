@@ -1,8 +1,8 @@
 Change log
 ==========
 
-1.0 (unreleased)
-----------------
+0.9.1 (2025-11-19)
+------------------
 
 - Convert to PEP 420-style namespace package
 
