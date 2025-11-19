@@ -86,7 +86,7 @@ class SAML2MetadataProvider:
             if self.metadata_sign:
                 security_ctx = security_context(entity_cfg)
                 entity, xmldoc = sign_entity_descriptor(
-                                    entity, config['entityid'], security_ctx)
+                    entity, config['entityid'], security_ctx)
             xmldoc = metadata_tostring_fix(entity, nspair, xmldoc)
 
         if isinstance(xmldoc, bytes):

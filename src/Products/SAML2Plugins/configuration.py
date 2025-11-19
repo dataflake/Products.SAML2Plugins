@@ -81,7 +81,7 @@ class PySAML2ConfigurationSupport:
         if pysaml2_cfg is not None:
             for attr_converter in pysaml2_cfg.attribute_converters:
                 mappings = name_formats.setdefault(
-                            attr_converter.name_format, [])
+                    attr_converter.name_format, [])
                 for key, value in attr_converter._fro.items():
                     mappings.append({'from': key, 'to': value})
 
@@ -188,17 +188,19 @@ class PySAML2ConfigurationSupport:
         for enc_data in encryption_settings:
             cert_file = enc_data.get('cert_file', None)
             if cert_file and not os.path.isfile(os.path.abspath(cert_file)):
+                desc = f'Cannot read certificate file {cert_file}'
                 errors.append(
-                  {'key': 'cert_file (encryption_keypairs)',
-                   'severity': 'error',
-                   'description': f'Cannot read certificate file {cert_file}'})
+                    {'key': 'cert_file (encryption_keypairs)',
+                     'severity': 'error',
+                     'description': desc})
 
             key_file = enc_data.get('key_file', None)
             if key_file and not os.path.isfile(os.path.abspath(key_file)):
+                desc = f'Cannot read private key file {key_file}'
                 errors.append(
-                  {'key': 'key_file (encryption_keypairs)',
-                   'severity': 'error',
-                   'description': f'Cannot read private key file {key_file}'})
+                    {'key': 'key_file (encryption_keypairs)',
+                     'severity': 'error',
+                     'description': desc})
 
         # The ``xmlsec1`` binary must be available
         xmlsec_binary = configuration.get('xmlsec_binary', None)

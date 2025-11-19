@@ -31,9 +31,9 @@ def pysaml2_add_signature_support():
     # signature algorithms.
     additional_algs = ()
     for short_name, name in (
-            ('SIG_SHA256_RSA_MGF1',  # required by Elster
-             'http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1'),
-       ):
+        ('SIG_SHA256_RSA_MGF1',  # required by Elster
+         'http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1'),
+    ):
         setattr(xmldsig, short_name, name)
         additional_algs += ((short_name, name),)
     xmldsig.SIG_ALLOWED_ALG = xmldsig.SIG_ALLOWED_ALG + additional_algs
