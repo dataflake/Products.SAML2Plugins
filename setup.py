@@ -23,7 +23,7 @@ def read(name):
 
 setup(
     name='Products.SAML2Plugins',
-    version='0.9.2',
+    version='0.9.3.dev0',
     description='SAML 2.0 plugins for the Zope PluggableAuthService',
     long_description=read('README.rst'),
     long_description_content_type='text/x-rst',
@@ -43,7 +43,7 @@ setup(
         "Topic :: Internet :: WWW/HTTP :: Site Management",
         "Topic :: Software Development",
         "Topic :: System :: Systems Administration ::"
-        "Authentication/Directory",
+        " Authentication/Directory",
     ],
     keywords='web application server zope saml saml2',
     author="Jens Vagelpohl and contributors",
