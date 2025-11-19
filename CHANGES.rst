@@ -1,8 +1,10 @@
 Change log
 ==========
 
-0.9.3 (unreleased)
+0.9.3 (2025-11-19)
 ------------------
+
+- Move all package metadata to ``pyproject.toml``.
 
 
 0.9.2 (2025-11-19)

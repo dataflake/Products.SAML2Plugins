@@ -8,6 +8,55 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "Products.SAML2Plugins"
+version = "0.9.3"
+description = "SAML 2.0 plugins for the Zope PluggableAuthService"
+keywords = ["zope", "authorization", "authentication", "saml", "saml2"]
+readme = "README.rst"
+requires-python = ">=3.10"
+license = "ZPL-2.1"
+license-files = ["LICENSE.txt"]
+authors = [
+  { name = "Jens Vagelpohl and contributors", email = "jens@dataflake.org" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Web Environment",
+  "Framework :: Zope",
+  "Framework :: Zope :: 5",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Internet :: WWW/HTTP :: Site Management",
+  "Topic :: System :: Systems Administration :: Authentication/Directory",
+]
+dependencies = [
+  "Zope >= 5",
+  "Products.PluggableAuthService",
+  "pysaml2",
+]
+
+[project.optional-dependencies]
+docs = [
+  "Sphinx",
+  "repoze.sphinx.autointerface",
+  "furo",
+]
+
+[project.urls]
+Documentation = "https://saml2plugins.readthedocs.io"
+Issues = "https://github.com/dataflake/Products.SAML2Plugins/issues"
+Source = "https://github.com/dataflake/Products.SAML2Plugins"
+Changelog = "https://saml2plugins.readthedocs.io/en/latest/changes.html"
+
 [tool.coverage.run]
 branch = true
 source = ["Products.SAML2Plugins"]
