@@ -390,13 +390,13 @@ class SAML2PluginBaseTests:
                          {'plugin_uid': plugin._uid})
 
         # Add a last activity indicator, but it's too old
-        max_age = int(time.time()) - (plugin.inactivity_timeout*3600)
-        session[plugin._uid]['last_active'] = (max_age-1)
+        max_age = int(time.time()) - (plugin.inactivity_timeout * 3600)
+        session[plugin._uid]['last_active'] = (max_age - 1)
         self.assertEqual(plugin.extractCredentials(req),
                          {'plugin_uid': plugin._uid})
 
         # Set last activity indicator to an acceptable value
-        session[plugin._uid]['last_active'] = (max_age+10)
+        session[plugin._uid]['last_active'] = (max_age + 10)
         self.assertEqual(plugin.extractCredentials(req),
                          {'plugin_uid': plugin._uid,
                           'login': 'testuser1',

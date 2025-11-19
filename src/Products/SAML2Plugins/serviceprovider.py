@@ -49,8 +49,8 @@ class SAML2ServiceProvider:
         """ Get a SAML 2.0 client that delegates interactions to pysaml2 """
         if self._v_saml2client is None:
             self._v_saml2client = Saml2Client(
-                                    config=self.getPySAML2Configuration(),
-                                    identity_cache=self.getPySAML2Cache())
+                config=self.getPySAML2Configuration(),
+                identity_cache=self.getPySAML2Cache())
 
         return self._v_saml2client
 
@@ -103,8 +103,8 @@ class SAML2ServiceProvider:
             if md.any2('idp', 'single_logout_service', BINDING_HTTP_POST) or \
                md.any2('idp', 'single_logout_service', BINDING_HTTP_REDIRECT):
                 saml_resp_dict = client.global_logout(
-                                    str_to_nameid(session_info['name_id']),
-                                    reason='Manual logout')
+                    str_to_nameid(session_info['name_id']),
+                    reason='Manual logout')
             else:
                 logger.debug('logout: IdP offers no single logout service')
 
@@ -212,8 +212,8 @@ class SAML2ServiceProvider:
         (req_id,
          binding,
          http_info) = client.prepare_for_negotiated_authenticate(
-                        entityid=idp_entityid,
-                        relay_state=return_url)
+            entityid=idp_entityid,
+            relay_state=return_url)
 
         return http_info
 

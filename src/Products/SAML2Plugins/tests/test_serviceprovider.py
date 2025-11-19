@@ -51,7 +51,7 @@ class SAML2ServiceProviderTests(PluginTestCase):
 
         # The first call generates the client object, subsequent calls
         # will return it from cache, so the objects should be identical
-        self.assertTrue(saml2_client is plugin.getPySAML2Client())
+        self.assertIs(saml2_client, plugin.getPySAML2Client())
 
     def test_isLoggedIn(self):
         plugin = self._makeOne()
@@ -209,7 +209,7 @@ class SAML2ServiceProviderTests(PluginTestCase):
         # Pass an unknown IdP EntityId
         with self.assertRaises(Exception) as context:
             plugin.getIdPAuthenticationData(
-                        req, idp_entityid='https://foo.com/idp')
+                req, idp_entityid='https://foo.com/idp')
         self.assertIn('No supported bindings available for authentication',
                       str(context.exception))
 
@@ -268,7 +268,7 @@ class SAML2ServiceProviderTests(PluginTestCase):
         # Pass an unknown IdP EntityId
         with self.assertRaises(Exception) as context:
             plugin.getIdPAuthenticationData(
-                        req, idp_entityid='https://foo.com/idp')
+                req, idp_entityid='https://foo.com/idp')
         self.assertIn('No supported bindings available for authentication',
                       str(context.exception))
 

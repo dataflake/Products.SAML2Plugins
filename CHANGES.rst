@@ -4,6 +4,12 @@ Change log
 1.0 (unreleased)
 ----------------
 
+- Convert to PEP 420-style namespace package
+
+- Add support for Python 3.13, 3.14.
+
+- Drop support for Python 3.9.
+
 - Check IdP metadata for a configured single logout service before logging out.
 
 - Add method ``isLoggedInHere`` to see if the current user is from the plugin.

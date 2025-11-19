@@ -2,7 +2,7 @@
 # https://github.com/zopefoundation/meta/tree/master/config/zope-product
 [meta]
 template = "zope-product"
-commit-id = "08a3cc69"
+commit-id = "9fcd3d67"
 
 [python]
 with-windows = false
@@ -39,6 +39,7 @@ additional-rules = [
 additional-ignores = [
     "docs/_build/html/_static/*",
     "docs/_build/html/_images/*",
+    "docs/_build/html/_static/scripts/*",
     ]
 
 [coverage]
@@ -54,3 +55,6 @@ additional-install = [
     "sudo apt update",
     "sudo apt install -y xmlsec1",
     ]
+
+[pre-commit]
+teyit-exclude = "Products/SAML2Plugins/tests/test_data/saml2_cfg_invalid\\.py"

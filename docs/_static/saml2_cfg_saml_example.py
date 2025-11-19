@@ -1,6 +1,3 @@
-from saml2 import BINDING_HTTP_REDIRECT
-
-
 CONFIG = {
     "entityid": "https://www.example.com",
     "service": {

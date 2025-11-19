@@ -231,7 +231,7 @@ class SAML2PluginBase(BasePlugin,
             if idp_entityid in self.getIdentityProviders():
                 logger.debug(f'login: Using IdP {idp_entityid}')
                 saml_req_info = self.getIdPAuthenticationData(
-                                    REQUEST, idp_entityid=idp_entityid)
+                    REQUEST, idp_entityid=idp_entityid)
             else:
                 msg = f'login: Invalid identity provider {idp_entityid}'
                 logger.error(msg)
@@ -289,7 +289,7 @@ class SAML2PluginBase(BasePlugin,
         if session_info:
             # Don't accept sessions older than the activity timeout
             now_secs = int(time.time())
-            max_inactive = now_secs - (self.inactivity_timeout*3600)
+            max_inactive = now_secs - (self.inactivity_timeout * 3600)
             if session_info.get('last_active', 0) < max_inactive:
                 return creds
             else:
